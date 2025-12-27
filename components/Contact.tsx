@@ -130,7 +130,7 @@ export default function Contact() {
               <p className="text-blue-400 mt-8 mb-4">$ ls ./social-links</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                 <a
-                  href="https://github.com"
+                  href="https://github.com/sohagzayan"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors border border-gray-700/50 group hover:border-blue-500/30"
@@ -142,12 +142,12 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-200">GitHub</p>
-                    <p className="text-sm text-gray-400">@sohaghossain</p>
+                    <p className="text-sm text-gray-400">@sohagzayan</p>
                   </div>
                 </a>
 
                 <a
-                  href="https://linkedin.com"
+                  href="https://www.linkedin.com/in/sohagzayan/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors border border-gray-700/50 group hover:border-purple-500/30"
@@ -164,7 +164,7 @@ export default function Contact() {
                 </a>
 
                 <a
-                  href="https://twitter.com"
+                  href="https://twitter.com/sohagmia360"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors border border-gray-700/50 group hover:border-pink-500/30"
@@ -176,7 +176,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-200">X</p>
-                    <p className="text-sm text-gray-400">@sohaghossain</p>
+                    <p className="text-sm text-gray-400">@sohagmia360</p>
                   </div>
                 </a>
               </div>

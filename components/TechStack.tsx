@@ -76,7 +76,7 @@ export default function TechStack() {
             isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'
           }`}
         >
-          TECH STACK
+          Core Skills
         </h2>
         <div
           className={`h-px w-full bg-gradient-to-r from-transparent via-gray-600 to-transparent transition-all duration-700 delay-200 ${

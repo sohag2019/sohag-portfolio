@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <>
       <div className="h-full w-full mx-auto max-w-[60.5rem] px-6">
-          <Header />
+        <Header />
         <main className="w-full min-h-screen h-full pb-10 pt-24">
           <Hero />
           <TechStack />

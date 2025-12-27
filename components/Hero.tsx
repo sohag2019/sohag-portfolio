@@ -86,25 +86,6 @@ export default function Hero() {
         Crafting exceptional digital experiences with modern web technologies
       </p>
 
-      {/* Tech Stack Badges */}
-      <div
-        className={`flex flex-wrap items-center justify-center gap-3 mb-8 transition-all duration-700 delay-600 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-      >
-        {['React', 'TypeScript', 'Node.js', 'Next.js', 'GraphQL'].map((tech, index) => (
-          <div
-            key={tech}
-            className="px-4 py-2 bg-gray-800/80 rounded-lg text-white text-sm font-medium border border-gray-700/50 hover:border-gray-600 hover:bg-gray-700/80 transition-all duration-300 transform hover:scale-105"
-            style={{
-              transitionDelay: isVisible ? `${700 + index * 100}ms` : '0ms',
-            }}
-          >
-            {tech}
-          </div>
-        ))}
-      </div>
-
       {/* Call-to-Action Buttons */}
       <div
         className={`flex items-center gap-4 flex-wrap justify-center transition-all duration-700 delay-700 ${
