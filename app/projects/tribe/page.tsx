@@ -15,7 +15,7 @@ export default function TribeProjectPage() {
           <div className="flex items-center gap-3 text-sm text-white max-sm:flex-col max-sm:w-full">
             <Link
               target="_blank"
-              href="https://github.com/stefvndev/tribe-community-app"
+              href="https://github.com/sohagzayan/tribe-community-app"
               className="flex items-center gap-1 bg-gray-400/10 max-sm:w-full max-sm:justify-center rounded-full py-1 px-6 hover:bg-gray-400/20 transition-all"
             >
               <svg
@@ -146,7 +146,7 @@ export default function TribeProjectPage() {
                   title="Tribe - Community App Overview (Portfolio project)"
                   width="100%"
                   height="100%"
-                  src="https://www.youtube.com/embed/gKtcJ9Fn6KU?autoplay=0&mute=0&controls=1&origin=https%3A%2F%2Fwww.stefantopalovic.com&playsinline=1&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&enablejsapi=1&widgetid=3&forigin=https%3A%2F%2Fwww.stefantopalovic.com%2Fprojects%2Ftribe&aoriginsup=1&vf=1"
+                  src="https://www.youtube.com/embed/gKtcJ9Fn6KU?autoplay=0&mute=0&controls=1&origin=https%3A%2F%2Fwww.sohagdev.com&playsinline=1&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&enablejsapi=1&widgetid=3&forigin=https%3A%2F%2Fwww.sohagdev.com%2Fprojects%2Ftribe&aoriginsup=1&vf=1"
                   id="widget4"
                 ></iframe>
               </div>
