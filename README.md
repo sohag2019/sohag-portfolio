@@ -1,4 +1,4 @@
-# Sohag Hossain - Portfolio Website
+# Sohag Hossain - Portfolio Websites
 
 A modern, responsive portfolio website showcasing my work as a Full Stack Developer. Built with Next.js, React, TypeScript, and Tailwind CSS, this portfolio demonstrates my expertise in building scalable, enterprise-grade web applications.
 
