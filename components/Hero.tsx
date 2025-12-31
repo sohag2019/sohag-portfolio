@@ -48,7 +48,7 @@ export default function Hero() {
           <div className="w-full h-full bg-[#0a0a0a] rounded-full p-1">
             <div className="w-full h-full rounded-full overflow-hidden">
               <Image
-                src="/images/my-images/sohag3.png"
+                src="/images/my-images/sohagdev.png"
                 alt="Sohag Hossain - Full Stack Developer Profile Photo"
                 width={128}
                 height={128}
