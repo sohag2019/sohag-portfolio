@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Script to make 100 commits with changes to README.md
+# Script to make 15 commits with changes to README.md
 
-for i in {1..100}; do
-  echo "Iteration $i of 100"
+for i in {1..15}; do
+  echo "Iteration $i of 15"
   
   # Add a line to README.md with timestamp and iteration number
   echo "" >> README.md
@@ -22,7 +22,7 @@ for i in {1..100}; do
   echo "---"
 done
 
-echo "All 100 commits completed!"
+echo "All 15 commits completed!"
 
 
 
