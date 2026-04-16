@@ -6,7 +6,7 @@ A modern, responsive portfolio website showcasing my work as a Full Stack Develo
 
 I'm **Sohag Hossain**, a Full Stack Developer with a passion for architecting scalable, enterprise-grade solutions across the full stack. I lead high-performing development teams and specialize in modern web technologies including React, Next.js, TypeScript, Node.js, Python, and PostgreSQL.
 
-### Current Role
+### Current Roles
 **Team Lead / Full Stack Developer** at Remote Talent Ltd. (Dhaka, Bangladesh)  
 *Leading teams to architect scalable, enterprise-grade solutions across the full stack*
 
