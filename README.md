@@ -96,7 +96,7 @@ sohag-p/
 └── types/                 # TypeScript type definitions
 ```
 
-## Sections
+## Sectionss
 
 1. **Hero Section**: Introduction with profile photo and call-to-action buttons
 2. **Tech Stack**: Interactive display of technical skills across Frontend, Backend, Design, and Tools
