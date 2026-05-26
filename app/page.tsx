@@ -70,12 +70,12 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <>
+      <Header />
+      <section aria-label="Hero section">
+        <Hero />
+      </section>
       <div className="h-full w-full mx-auto max-w-[60.5rem] px-6">
-        <Header />
-        <main className="w-full min-h-screen h-full pb-10 pt-24">
-          <section aria-label="Hero section">
-            <Hero />
-          </section>
+        <main className="w-full min-h-screen h-full pb-10">
           <section id="tech-stack" aria-label="Technology stack">
             <TechStack />
           </section>
