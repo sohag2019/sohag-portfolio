@@ -1,712 +1,784 @@
 'use client';
 
-import Link from 'next/link';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
-import { getProjectConfig } from '@/lib/projectsConfig';
 
-export default function Projects() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const journeyContainerRef = useRef<HTMLDivElement>(null);
-  const projectConfig = getProjectConfig('edupeak');
+interface ProjectFeature {
+  title: string;
+  desc: string;
+  icon: string;
+  image: string;
+}
+
+interface Comment {
+  id: string;
+  name: string;
+  text: string;
+  date: string;
+  avatar: string;
+}
+
+interface Project {
+  title: string;
+  description: string;
+  longDesc: string;
+  tags: string[];
+  category: string;
+  github?: string;
+  live?: string;
+  color: string;
+  cover: string;
+  features: ProjectFeature[];
+  stats: { label: string; value: string }[];
+}
+
+const projects: Project[] = [
+  {
+    title: 'EduPeak LMS',
+    description: 'Full-featured LMS with 200+ features — course creation, analytics, payments, multi-tenant workspaces.',
+    longDesc: 'A comprehensive Learning Management System designed to deliver an exceptional educational experience. From course creation to analytics, payments to gamification, EduPeak provides everything needed for modern online learning.',
+    tags: ['NextJS', 'React', 'TypeScript', 'PostgreSQL', 'Prisma', 'Stripe'],
+    category: 'Web',
+    live: 'https://edupeak.vercel.app',
+    color: '#3b82f6',
+    cover: '/images/hero_section.png',
+    stats: [
+      { label: 'Features', value: '200+' },
+      { label: 'User Roles', value: '4' },
+      { label: 'Integrations', value: '10+' },
+    ],
+    features: [
+      { title: 'Course Management', desc: 'Create, organize, and publish courses with rich content — videos, quizzes, assignments, and downloadable resources.', icon: '📚', image: '/images/course-layout-progress-tracking.png' },
+      { title: 'Progress Tracking', desc: 'Real-time dashboards showing completion rates, quiz scores, time spent, and personalized learning paths.', icon: '📊', image: '/images/admin-analytics-dashbord.png' },
+      { title: 'Stripe Payments', desc: 'Full payment integration with subscriptions, one-time purchases, coupons, and automated invoicing.', icon: '💳', image: '/images/hero_section.png' },
+      { title: 'Multi-Tenant', desc: 'Isolated workspaces for different organizations with custom branding, domains, and user management.', icon: '🏢', image: '/images/course-layout-progress-tracking.png' },
+      { title: 'Live Support', desc: 'Built-in video calls and chat for real-time student support and live class sessions.', icon: '🎥', image: '/images/admin-analytics-dashbord.png' },
+      { title: 'Gamification', desc: 'Badges, certificates, leaderboards, and achievement systems to boost student engagement.', icon: '🏆', image: '/images/hero_section.png' },
+    ],
+  },
+  {
+    title: 'Dev Portfolio v2',
+    description: 'This site — built with Next.js, Framer Motion, and editorial design principles.',
+    longDesc: 'A personal portfolio rebuilt from scratch with a focus on editorial design, rich animations, and storytelling. Every section is crafted to communicate skills and experience through interactive visual narratives.',
+    tags: ['NextJS', 'React', 'TypeScript', 'TailwindCSS', 'Framer Motion'],
+    category: 'Web',
+    github: 'https://github.com/sohagdev',
+    color: '#a78bfa',
+    cover: '/images/hero_section.png',
+    stats: [
+      { label: 'Sections', value: '8+' },
+      { label: 'Animations', value: '50+' },
+      { label: 'Lighthouse', value: '95+' },
+    ],
+    features: [
+      { title: 'Scroll Animations', desc: 'Every section features unique scroll-triggered animations using Framer Motion with spring physics.', icon: '✨', image: '/images/hero_section.png' },
+      { title: '3D Interactions', desc: 'Mouse-following tilt effects, parallax layers, and depth-aware hover states throughout.', icon: '🎭', image: '/images/hero_section.png' },
+      { title: 'Responsive Design', desc: 'Pixel-perfect layouts across all devices with adaptive navigation and touch interactions.', icon: '📱', image: '/images/hero_section.png' },
+      { title: 'Dark Theme', desc: 'Carefully crafted dark color palette with CSS variables for consistent theming.', icon: '🌙', image: '/images/hero_section.png' },
+    ],
+  },
+  {
+    title: 'E-commerce Platform',
+    description: 'Full-stack e-commerce with real-time inventory, cart, payments, and admin dashboard.',
+    longDesc: 'A production-grade e-commerce platform with real-time inventory management, smart cart system, Stripe payment processing, and a comprehensive admin dashboard for managing products, orders, and customers.',
+    tags: ['NextJS', 'Node.js', 'MongoDB', 'Stripe', 'TailwindCSS'],
+    category: 'Web',
+    color: '#4ade80',
+    cover: '/images/hero_section.png',
+    stats: [
+      { label: 'Products', value: '1K+' },
+      { label: 'API Routes', value: '40+' },
+      { label: 'Uptime', value: '99.9%' },
+    ],
+    features: [
+      { title: 'Smart Cart', desc: 'Persistent cart with real-time stock validation, quantity limits, and automatic price calculations.', icon: '🛒', image: '/images/hero_section.png' },
+      { title: 'Payment Flow', desc: 'Secure Stripe checkout with saved cards, order confirmation, and automated receipt emails.', icon: '💰', image: '/images/hero_section.png' },
+      { title: 'Admin Dashboard', desc: 'Full admin panel for product management, order tracking, customer insights, and revenue analytics.', icon: '📈', image: '/images/hero_section.png' },
+      { title: 'Inventory System', desc: 'Real-time stock tracking with low-stock alerts, auto-reorder triggers, and variant management.', icon: '📦', image: '/images/hero_section.png' },
+    ],
+  },
+  {
+    title: 'REST API Toolkit',
+    description: 'Production-ready API boilerplate with auth, rate limiting, validation, and auto-docs.',
+    longDesc: 'A battle-tested REST API starter kit designed for rapid backend development. Includes authentication, authorization, input validation, rate limiting, error handling, and auto-generated Swagger documentation.',
+    tags: ['Node.js', 'Express', 'PostgreSQL', 'Docker', 'Swagger'],
+    category: 'CLI',
+    github: 'https://github.com/sohagdev',
+    color: '#f472b6',
+    cover: '/images/hero_section.png',
+    stats: [
+      { label: 'Endpoints', value: '30+' },
+      { label: 'Test Coverage', value: '90%' },
+      { label: 'Docker Ready', value: '✓' },
+    ],
+    features: [
+      { title: 'Auth System', desc: 'JWT + refresh tokens, OAuth2, role-based access control, and session management out of the box.', icon: '🔐', image: '/images/hero_section.png' },
+      { title: 'Validation', desc: 'Zod-powered request validation with auto-generated error messages and type inference.', icon: '✅', image: '/images/hero_section.png' },
+      { title: 'Rate Limiting', desc: 'Configurable per-route rate limiting with Redis backing and sliding window algorithm.', icon: '🛡️', image: '/images/hero_section.png' },
+      { title: 'Auto Docs', desc: 'Swagger/OpenAPI documentation auto-generated from route definitions and Zod schemas.', icon: '📄', image: '/images/hero_section.png' },
+    ],
+  },
+];
+
+const filters = ['All', 'Web', 'CLI'];
+
+// ── Custom Scrollbar ──
+function CustomScrollbar({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
+  const thumbY = useMotionValue(0);
+  const [thumbHeight, setThumbHeight] = useState(40);
+  const [trackHeight, setTrackHeight] = useState(0);
+  const [visible, setVisible] = useState(false);
+  const hideTimeout = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
+    const el = containerRef.current;
+    if (!el) return;
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
+    const update = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const ratio = clientHeight / scrollHeight;
+      const tH = Math.max(ratio * clientHeight, 30);
+      setThumbHeight(tH);
+      setTrackHeight(clientHeight);
+      const maxScroll = scrollHeight - clientHeight;
+      const maxThumb = clientHeight - tH;
+      thumbY.set(maxScroll > 0 ? (scrollTop / maxScroll) * maxThumb : 0);
 
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current);
-      }
+      setVisible(true);
+      clearTimeout(hideTimeout.current);
+      hideTimeout.current = setTimeout(() => setVisible(false), 1200);
     };
-  }, []);
 
-  // Scroll-based animation for border
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => { el.removeEventListener('scroll', update); ro.disconnect(); };
+  }, [containerRef, thumbY]);
+
+  if (trackHeight === 0) return null;
+
+  return (
+    <div
+      className="absolute right-1 top-0 w-[6px] z-20 pointer-events-none transition-opacity duration-500"
+      style={{ height: trackHeight, opacity: visible ? 1 : 0 }}
+    >
+      <motion.div
+        className="w-full rounded-full"
+        style={{
+          height: thumbHeight,
+          y: thumbY,
+          background: 'rgba(255,255,255,0.2)',
+        }}
+      />
+    </div>
+  );
+}
+
+// ── Star Rating ──
+function StarRating({ projectTitle }: { projectTitle: string }) {
+  const storageKey = `proj-rating-${projectTitle.replace(/\s/g, '-').toLowerCase()}`;
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [saved, setSaved] = useState(false);
+
   useEffect(() => {
-    const handleScroll = () => {
-      if (!journeyContainerRef.current) return;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) { setRating(parseInt(stored)); setSaved(true); }
+  }, [storageKey]);
 
-      const container = journeyContainerRef.current;
-      const rect = container.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const containerHeight = rect.height;
-      
-      // Calculate scroll progress (0 to 1)
-      // Progress starts when container top enters viewport
-      // Progress completes when container bottom exits viewport
-      const containerTop = rect.top;
-      const containerBottom = rect.bottom;
-      
-      let progress = 0;
-      
-      // Only calculate if container is in or near viewport
-      if (containerBottom > 0 && containerTop < windowHeight) {
-        // Calculate how much of the container has been scrolled through
-        // Start point: when container top reaches viewport top
-        // End point: when container bottom reaches viewport bottom
-        const scrollableDistance = containerHeight + windowHeight;
-        const scrolledDistance = windowHeight - containerTop;
-        
-        progress = Math.max(0, Math.min(1, scrolledDistance / scrollableDistance));
-      } else if (containerTop >= windowHeight) {
-        // Container hasn't entered viewport yet
-        progress = 0;
-      } else if (containerBottom <= 0) {
-        // Container has completely scrolled past
-        progress = 1;
-      }
+  const handleRate = (star: number) => {
+    setRating(star);
+    setSaved(true);
+    localStorage.setItem(storageKey, String(star));
+  };
 
-      setScrollProgress(progress);
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <motion.button
+            key={star}
+            className="cursor-pointer bg-transparent border-none p-0 text-lg"
+            onClick={() => handleRate(star)}
+            onMouseEnter={() => setHover(star)}
+            onMouseLeave={() => setHover(0)}
+            whileTap={{ scale: 1.3 }}
+            animate={{ scale: (hover || rating) >= star ? 1.1 : 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+          >
+            <span style={{ color: (hover || rating) >= star ? '#fbbf24' : 'var(--hair-2)', transition: 'color 0.2s' }}>
+              ★
+            </span>
+          </motion.button>
+        ))}
+      </div>
+      <AnimatePresence>
+        {saved && (
+          <motion.span
+            className="text-[11px] font-mono uppercase tracking-wide"
+            style={{ color: '#fbbf24' }}
+            initial={{ opacity: 0, x: -5 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            {rating}/5
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Comments Section ──
+function CommentsSection({ projectTitle }: { projectTitle: string }) {
+  const storageKey = `proj-comments-${projectTitle.replace(/\s/g, '-').toLowerCase()}`;
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [name, setName] = useState('');
+  const [text, setText] = useState('');
+  const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(storageKey);
+    if (stored) setComments(JSON.parse(stored));
+  }, [storageKey]);
+
+  const addComment = () => {
+    if (!name.trim() || !text.trim()) return;
+    const newComment: Comment = {
+      id: Date.now().toString(),
+      name: name.trim(),
+      text: text.trim(),
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      avatar: name.trim().charAt(0).toUpperCase(),
     };
+    const updated = [newComment, ...comments];
+    setComments(updated);
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    setName('');
+    setText('');
+    setShowForm(false);
+  };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll, { passive: true });
-    handleScroll(); // Initial calculation
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3
+          className="font-mono text-[11px] tracking-[0.08em] uppercase"
+          style={{ color: 'var(--muted)', opacity: 0.5 }}
+        >
+          Feedback ({comments.length})
+        </h3>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="text-xs font-bold cursor-pointer px-3 py-1.5 rounded-full transition-all duration-200"
+          style={{ border: '1px solid var(--hair)', background: 'transparent', color: 'var(--fg)' }}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--fg)')}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--hair)')}
+        >
+          {showForm ? 'Cancel' : '+ Add'}
+        </button>
+      </div>
 
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
-    };
-  }, []);
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            className="mb-4 flex flex-col gap-2"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <input
+              type="text"
+              placeholder="Your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--hair)', color: 'var(--fg)' }}
+            />
+            <textarea
+              placeholder="Leave your feedback..."
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 rounded-lg text-sm outline-none resize-none"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--hair)', color: 'var(--fg)' }}
+            />
+            <button
+              onClick={addComment}
+              className="self-end px-4 py-2 rounded-full text-xs font-bold cursor-pointer transition-all duration-200"
+              style={{ background: 'var(--fg)', color: 'var(--bg)', border: 'none' }}
+            >
+              Post Feedback
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-  const handleImageClick = (imageSrc: string) => {
-    setSelectedImage(imageSrc);
+      <div className="flex flex-col gap-3 max-h-[200px] overflow-y-auto proj-modal-scroll">
+        {comments.length === 0 && !showForm && (
+          <p className="text-[13px] text-center py-4" style={{ color: 'var(--muted)', opacity: 0.4 }}>
+            No feedback yet — be the first!
+          </p>
+        )}
+        {comments.map((c, i) => (
+          <motion.div
+            key={c.id}
+            className="flex gap-3 p-3 rounded-lg"
+            style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--hair)' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+          >
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+              style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--fg)' }}
+            >
+              {c.avatar}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-sm font-medium" style={{ color: 'var(--fg)' }}>{c.name}</span>
+                <span className="text-[10px] font-mono" style={{ color: 'var(--muted)', opacity: 0.4 }}>{c.date}</span>
+              </div>
+              <p className="text-[13px] leading-relaxed" style={{ color: 'var(--muted)' }}>{c.text}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Project Modal ──
+function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeFeature, setActiveFeature] = useState(0);
+
+  useEffect(() => {
     document.body.style.overflow = 'hidden';
-  };
-
-  const handleCloseModal = () => {
-    setSelectedImage(null);
-    document.body.style.overflow = 'unset';
-  };
+    return () => { document.body.style.overflow = ''; };
+  }, []);
 
   useEffect(() => {
-    if (!selectedImage) return;
-    
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleCloseModal();
-      }
-    };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [selectedImage]);
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <motion.div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(16px)' }} />
+
+      {/* Modal container */}
+      <motion.div
+        className="relative w-full max-w-[820px] max-h-[92vh] sm:max-h-[88vh] rounded-t-3xl sm:rounded-2xl overflow-hidden flex flex-col"
+        style={{ background: '#0c0c0c', border: `1px solid ${project.color}20`, boxShadow: `0 0 80px ${project.color}08, 0 25px 60px rgba(0,0,0,0.5)` }}
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, y: 60, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 40, scale: 0.97 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {/* Floating close button */}
+        <motion.button
+          onClick={onClose}
+          className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center rounded-full cursor-pointer z-30 text-sm"
+          style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--muted)', backdropFilter: 'blur(12px)' }}
+          whileHover={{ scale: 1.1, borderColor: 'rgba(255,255,255,0.3)' }}
+          whileTap={{ scale: 0.95 }}
+        >
+          ✕
+        </motion.button>
+
+        {/* Scrollable content */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto proj-modal-scroll relative">
+          <CustomScrollbar containerRef={scrollRef} />
+
+          {/* ── Hero Cover ── */}
+          <div className="relative w-full aspect-[2.2/1] overflow-hidden">
+            <Image src={project.cover} alt={project.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 820px" />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #0c0c0c 0%, rgba(12,12,12,0.6) 40%, transparent 100%)' }} />
+
+            {/* Accent glow */}
+            <div className="absolute bottom-0 left-0 w-[300px] h-[200px] -z-0" style={{ background: `radial-gradient(circle at bottom left, ${project.color}15, transparent 70%)` }} />
+
+            {/* Title overlay */}
+            <motion.div
+              className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 z-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-2 h-2 rounded-full" style={{ background: project.color, boxShadow: `0 0 10px ${project.color}` }} />
+                <span className="font-mono text-[10px] tracking-[0.1em] uppercase font-bold" style={{ color: project.color }}>{project.category}</span>
+                {project.live && (
+                  <>
+                    <span style={{ color: 'var(--hair-2)' }}>·</span>
+                    <span className="font-mono text-[10px] tracking-[0.1em] uppercase" style={{ color: '#4ade80' }}>● Live</span>
+                  </>
+                )}
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight" style={{ color: '#fff' }}>
+                {project.title}
+              </h2>
+            </motion.div>
+          </div>
+
+          <div className="px-6 sm:px-8 pb-8">
+            {/* ── Quick Actions (sticky-ish) ── */}
+            <motion.div
+              className="flex flex-wrap items-center gap-2 py-5 -mt-1"
+              style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+            >
+              {project.live && (
+                <a href={project.live} target="_blank" rel="noopener noreferrer"
+                  className="proj-modal-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-black uppercase tracking-widest"
+                  style={{ background: project.color, color: '#000' }}>
+                  Live Demo
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 7h10v10" /><path d="M7 17 17 7" /></svg>
+                </a>
+              )}
+              {project.github && (
+                <a href={project.github} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-bold transition-all duration-200"
+                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'var(--fg)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg>
+                  Source
+                </a>
+              )}
+              {project.github && (
+                <a href={`${project.github}/issues`} target="_blank" rel="noopener noreferrer"
+                  className="proj-contribute-btn inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-bold transition-all duration-200"
+                  style={{ border: '1px dashed rgba(255,255,255,0.12)', color: 'var(--muted)' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" x2="19" y1="8" y2="14" /><line x1="22" x2="16" y1="11" y2="11" /></svg>
+                  Contribute
+                </a>
+              )}
+              <div className="ml-auto">
+                <StarRating projectTitle={project.title} />
+              </div>
+            </motion.div>
+
+            {/* ── Description ── */}
+            <motion.p
+              className="text-[15px] leading-[1.75] mt-6 mb-8"
+              style={{ color: 'var(--muted)', maxWidth: 640 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              {project.longDesc}
+            </motion.p>
+
+            {/* ── Stats ── */}
+            <motion.div
+              className="grid grid-cols-3 gap-3 mb-10"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              {project.stats.map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  className="relative text-center py-5 rounded-2xl overflow-hidden group"
+                  style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}
+                  whileHover={{ borderColor: `${project.color}30`, background: 'rgba(255,255,255,0.04)' }}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 + i * 0.06 }}
+                >
+                  <div className="text-3xl font-black mb-1" style={{ color: project.color }}>{stat.value}</div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--muted)' }}>{stat.label}</div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* ── Tech tags ── */}
+            <motion.div
+              className="flex flex-wrap gap-2 mb-10"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              <span className="font-mono text-[10px] tracking-[0.1em] uppercase self-center mr-2" style={{ color: 'var(--muted)', opacity: 0.4 }}>Built with</span>
+              {project.tags.map((tag) => (
+                <span key={tag} className="px-3 py-1.5 rounded-lg text-[11px] font-semibold tracking-tight transition-all duration-200" style={{ background: `${project.color}08`, border: `1px solid ${project.color}18`, color: `${project.color}cc` }}>
+                  {tag}
+                </span>
+              ))}
+            </motion.div>
+
+            {/* ── Features Showcase ── */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="w-8 h-px" style={{ background: project.color }} />
+                <h3 className="font-mono text-[11px] tracking-[0.1em] uppercase font-bold" style={{ color: 'var(--fg)' }}>
+                  Key Features
+                </h3>
+                <span className="font-mono text-[11px]" style={{ color: 'var(--muted)', opacity: 0.4 }}>
+                  {project.features.length}
+                </span>
+              </div>
+
+              {/* Feature image preview */}
+              <motion.div
+                className="relative w-full aspect-[2.2/1] rounded-xl overflow-hidden mb-5"
+                style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+                key={activeFeature}
+                initial={{ opacity: 0.5 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4 }}
+              >
+                <Image
+                  src={project.features[activeFeature].image}
+                  alt={project.features[activeFeature].title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 760px"
+                />
+                <div className="absolute inset-0" style={{ background: `linear-gradient(to right, #0c0c0c 0%, transparent 40%, transparent 60%, #0c0c0c 100%)` }} />
+                <div className="absolute inset-0" style={{ background: `linear-gradient(to top, #0c0c0c 0%, transparent 50%)` }} />
+
+                {/* Feature label on image */}
+                <div className="absolute bottom-4 left-4 flex items-center gap-2">
+                  <span className="text-2xl">{project.features[activeFeature].icon}</span>
+                  <span className="text-lg font-bold" style={{ color: '#fff' }}>{project.features[activeFeature].title}</span>
+                </div>
+
+                {/* Progress dots */}
+                <div className="absolute bottom-4 right-4 flex gap-1.5">
+                  {project.features.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveFeature(idx)}
+                      className="cursor-pointer border-none rounded-full transition-all duration-300"
+                      style={{
+                        width: idx === activeFeature ? 18 : 6,
+                        height: 6,
+                        background: idx === activeFeature ? project.color : 'rgba(255,255,255,0.2)',
+                      }}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Feature cards grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {project.features.map((feature, i) => (
+                  <motion.button
+                    key={feature.title}
+                    className={`proj-feature-card text-left rounded-xl p-4 cursor-pointer transition-all duration-300 border-none`}
+                    style={{
+                      background: activeFeature === i ? `${project.color}08` : 'rgba(255,255,255,0.02)',
+                      border: activeFeature === i ? `1px solid ${project.color}30` : '1px solid rgba(255,255,255,0.06)',
+                    }}
+                    onClick={() => setActiveFeature(i)}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + i * 0.06, duration: 0.35 }}
+                    whileHover={{ y: -2 }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl mt-0.5 shrink-0">{feature.icon}</span>
+                      <div>
+                        <h4 className="font-bold text-[13px] mb-1.5" style={{ color: activeFeature === i ? 'var(--fg)' : 'var(--fg)' }}>{feature.title}</h4>
+                        <p className="text-[12px] leading-[1.6]" style={{ color: 'var(--muted)', opacity: activeFeature === i ? 1 : 0.7 }}>{feature.desc}</p>
+                      </div>
+                    </div>
+                    {activeFeature === i && (
+                      <motion.div
+                        className="mt-3 h-[2px] rounded-full"
+                        style={{ background: `linear-gradient(90deg, ${project.color}, transparent)` }}
+                        layoutId="feature-indicator"
+                        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                      />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* ── Feedback ── */}
+            <motion.div
+              className="mt-10 pt-8"
+              style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+            >
+              <CommentsSection projectTitle={project.title} />
+            </motion.div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ── Main Component ──
+export default function Projects() {
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  const filtered = activeFilter === 'All'
+    ? projects
+    : projects.filter((p) => p.category === activeFilter);
+
+  const closeModal = useCallback(() => setSelectedProject(null), []);
 
   return (
     <>
-      {/* Image Modal */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm fade-in"
-          onClick={handleCloseModal}
-        >
-          <div
-            className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center zoom-in-95"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={handleCloseModal}
-              className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-gray-800/80 hover:bg-gray-700/80 text-white transition-all duration-300 hover:scale-110"
-              aria-label="Close image"
+      <section className="w-full flex flex-col items-center px-4 sm:px-6 lg:px-8 pt-28 pb-24 relative z-10 overflow-hidden">
+        <div className="absolute -z-10 pointer-events-none" style={{ width: 600, height: 600, top: '-5%', right: '-10%', background: 'radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(80px)' }} />
+        <div className="absolute -z-10 pointer-events-none" style={{ width: 500, height: 500, bottom: '0', left: '-8%', background: 'radial-gradient(circle, rgba(167,139,250,0.04) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(80px)' }} />
+
+        <motion.div className="w-full max-w-6xl" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          {/* Header */}
+          <div className="flex flex-col items-center mb-14 text-center">
+            <motion.div
+              className="inline-flex items-center gap-2 mb-5 px-4 py-1.5 rounded-full"
+              style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <span className="text-xs font-medium tracking-wide" style={{ color: 'var(--muted)' }}>Click any project to explore</span>
+            </motion.div>
+
+            <motion.h2
+              className="text-3xl md:text-5xl lg:text-6xl font-black mb-5 tracking-tighter"
+              style={{ color: 'var(--fg)' }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              Featured Projects
+            </motion.h2>
+            <motion.p
+              className="text-base md:text-lg max-w-xl mx-auto"
+              style={{ color: 'var(--muted)', lineHeight: 1.7 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+            >
+              A collection of my most impactful work, from web applications to creative experiments.
+            </motion.p>
+          </div>
+
+          {/* Filter tabs */}
+          <motion.div
+            className="flex flex-wrap justify-center gap-2 mb-10"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            {filters.map((f) => (
+              <button
+                key={f}
+                onClick={() => setActiveFilter(f)}
+                className="px-5 py-2 rounded-full text-sm font-black uppercase tracking-widest transition-all duration-300 cursor-pointer"
+                style={{
+                  border: `1px solid ${activeFilter === f ? 'var(--fg)' : 'rgba(255,255,255,0.1)'}`,
+                  background: activeFilter === f ? 'var(--fg)' : 'transparent',
+                  color: activeFilter === f ? 'var(--bg)' : 'var(--muted)',
+                }}
               >
-                <path d="M18 6L6 18"></path>
-                <path d="M6 6l12 12"></path>
-              </svg>
-            </button>
+                {f}
+              </button>
+            ))}
+          </motion.div>
 
-            {/* Image with Animated Border */}
-            <div className="relative w-full h-full flex items-center justify-center border-2 border-blue-500/50 rounded-2xl animate-border-pulse overflow-hidden">
-              <Image
-                src={selectedImage}
-                alt={selectedImage.includes('hero') ? 'EduPeak LMS Hero Section - Full Screen View' : selectedImage.includes('course') ? 'EduPeak Course Dashboard and Progress Tracking Interface' : selectedImage.includes('admin') ? 'EduPeak Admin Analytics Dashboard' : 'EduPeak LMS Project Screenshot'}
-                fill
-                className="object-contain rounded-2xl"
-                sizes="100vw"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div
-        ref={sectionRef}
-        className={`flex flex-col w-full mt-24 transition-all duration-1000 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-        }`}
-      >
-      <h2
-        id="projects"
-        className={`font-bold text-lg tracking-widest text-white uppercase mb-16 pl-6 border-l-4 border-blue-500 transition-all duration-700 delay-100 ${
-          isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'
-        }`}
-      >
-        Projects
-      </h2>
-
-      {/* Journey Container */}
-      <div ref={journeyContainerRef} className="flex flex-col w-full relative">
-        {/* Scroll-based Animated Journey Line with Deep Dive Effect */}
-        <div className="absolute left-0 top-0 bottom-0 w-1 hidden md:block overflow-hidden">
-          {/* Base gradient layer */}
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-500 via-blue-400 to-transparent opacity-30"></div>
-          
-          {/* Scroll-based animated gradient */}
-          <div 
-            className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500 to-blue-600 transition-transform duration-75 ease-out"
-            style={{
-              transform: `translateY(${scrollProgress * 100}%)`,
-              opacity: 0.8
-            }}
-          />
-          
-          {/* Pulsing glow effect */}
-          <div 
-            className="absolute inset-0 bg-blue-500/20 blur-sm transition-opacity duration-300"
-            style={{
-              opacity: 0.3 + (scrollProgress * 0.5)
-            }}
-          />
-          
-          {/* Progress indicator - fills from top to bottom as you scroll */}
-          <div 
-            className="absolute top-0 left-0 right-0 bg-gradient-to-b from-blue-500 via-blue-400 to-blue-500 transition-all duration-75 ease-out"
-            style={{
-              height: `${scrollProgress * 100}%`,
-              opacity: 0.6
-            }}
-          />
-        </div>
-
-        {/* Project Introduction */}
-        <div
-          className={`relative flex flex-col md:flex-row gap-8 mb-16 transition-all duration-700 delay-200 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          {/* Timeline Dot - Centered on border */}
-          <div className="absolute w-4 h-4 rounded-full bg-blue-500 border-4 border-gray-900 z-10 hidden md:block shadow-lg shadow-blue-500/50" style={{ left: '-6px' }} />
-          
-          <div className="md:ml-20 flex-1">
-            <div className="flex flex-col gap-6">
-              <div className="relative">
-                <div className="bg-gray-900/50 rounded-xl p-6 border border-gray-400/20 hover:border-blue-500/50 transition-all duration-300">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-lg bg-gray-800/50 flex items-center justify-center border border-gray-400/20">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-blue-400"
-                      >
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <path d="M14 2v6h6"></path>
-                        <path d="M16 13H8"></path>
-                        <path d="M16 17H8"></path>
-                        <path d="M10 9H8"></path>
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-2xl tracking-wide text-white mb-1 transition-colors">
-                        EduPeak LMS
-                      </h3>
-                      <p className="text-blue-400 text-sm font-medium">
-                        Learning Management System • Version 0.1.0
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-gray-400 leading-relaxed text-lg">
-                    A comprehensive Learning Management System with <span className="text-white font-medium">200+ features</span> designed to deliver an exceptional educational experience. From course creation to analytics, payments to gamification, EduPeak provides everything needed for modern online learning.
-                  </p>
-                </div>
-              </div>
-
-              {/* Hero Image */}
-              <div
-                className="relative w-full md:w-[calc(100%+1.5rem)] md:-mr-6 h-auto rounded-xl overflow-hidden group border-2 border-gray-400/30 hover:border-blue-500/50 transition-all duration-300 bg-gray-900/50 cursor-pointer"
-                onClick={() => handleImageClick('/images/hero_section.png')}
-              >
-                <Image
-                  src="/images/hero_section.png"
-                  alt="EduPeak LMS Hero Section"
-                  width={1200}
-                  height={800}
-                  className="w-full h-auto object-contain rounded-xl"
-                  sizes="100vw"
-                />
-              </div>
-
-              {/* Quick Stats */}
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                {[
-                  { value: '200+', label: 'Features' },
-                  { value: '4', label: 'User Roles' },
-                  { value: '10+', label: 'Integrations' },
-                ].map((stat, index) => (
-                  <div
-                    key={stat.label}
-                    className="group cursor-pointer"
-                    style={{
-                      animationDelay: isVisible ? `${300 + index * 100}ms` : '0ms',
-                    }}
-                  >
-                    <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-400/20 group-hover:border-blue-500/50 transition-all duration-300 group-hover:scale-105">
-                      <div className="text-3xl font-bold text-blue-400 mb-1">
-                        {stat.value}
-                      </div>
-                      <div className="text-xs text-gray-400 uppercase tracking-wide group-hover:text-gray-300 transition-colors">
-                        {stat.label}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Core Features Journey */}
-        <div
-          className={`relative flex flex-col md:flex-row gap-8 mb-16 transition-all duration-700 delay-300 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          {/* Timeline Dot - Centered on border */}
-          <div className="absolute w-4 h-4 rounded-full bg-blue-500 border-4 border-gray-900 z-10 hidden md:block shadow-lg shadow-blue-500/50" style={{ left: '-6px' }} />
-          
-          <div className="md:ml-20 flex-1">
-            <div className="flex flex-col gap-6">
-              <div className="relative">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gray-800/50 flex items-center justify-center border border-gray-400/20">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-blue-400"
-                    >
-                      <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-                      <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-                    </svg>
-                  </div>
-                  <h3 className="font-bold text-xl tracking-wide text-white transition-colors">
-                    Core Learning Experience
-                  </h3>
-                </div>
-                <p className="text-gray-400 leading-relaxed mb-6">
-                  The foundation of EduPeak is built around creating an intuitive and engaging learning experience. Students can browse courses, track progress, complete assignments, and earn achievements.
-                </p>
-              </div>
-
-              {/* Feature Image */}
-              <div
-                className="relative w-full md:w-[calc(100%+1.5rem)] md:-mr-6 h-auto rounded-xl overflow-hidden group border-2 border-gray-400/30 hover:border-blue-500/50 transition-all duration-300 bg-gray-900/50 cursor-pointer"
-                onClick={() => handleImageClick('/images/course-layout-progress-tracking.png')}
-              >
-                <Image
-                  src="/images/course-layout-progress-tracking.png"
-                  alt="Course Dashboard & Progress Tracking"
-                  width={1200}
-                  height={800}
-                  className="w-full h-auto object-contain rounded-xl"
-                  sizes="100vw"
-                />
-              </div>
-
-              {/* Interactive Feature Tags */}
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                {[
-                  'Course Management',
-                  'Progress Tracking',
-                  'Assignment System',
-                  'Interactive Quizzes',
-                  'Certificate Generation',
-                  'Badges & Gamification',
-                ].map((feature, index) => (
-                  <div
-                    key={feature}
-                    onMouseEnter={() => setHoveredFeature(feature)}
-                    onMouseLeave={() => setHoveredFeature(null)}
-                    className={`bg-gray-800/20 rounded-lg px-4 py-2.5 border border-gray-400/10 text-sm text-gray-300 cursor-pointer transition-all duration-300 ${
-                      hoveredFeature === feature
-                        ? 'bg-blue-500/10 border-blue-500/50 text-blue-300 scale-105'
-                        : 'hover:bg-gray-800/30 hover:border-gray-400/20'
-                    }`}
-                    style={{
-                      animationDelay: isVisible ? `${400 + index * 50}ms` : '0ms',
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`transition-transform duration-300 ${hoveredFeature === feature ? 'scale-125' : ''}`}>
-                        ✓
-                      </span>
-                      <span>{feature}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Advanced Features Journey */}
-        <div
-          className={`relative flex flex-col md:flex-row gap-8 mb-16 transition-all duration-700 delay-400 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          {/* Timeline Dot - Centered on border */}
-          <div className="absolute w-4 h-4 rounded-full bg-blue-500 border-4 border-gray-900 z-10 hidden md:block shadow-lg shadow-blue-500/50" style={{ left: '-6px' }} />
-          
-          <div className="md:ml-20 flex-1">
-            <div className="flex flex-col gap-6">
-              <div className="relative">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gray-800/50 flex items-center justify-center border border-gray-400/20">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-blue-400"
-                    >
-                      <path d="M3 3v18h18"></path>
-                      <path d="M18 7c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z"></path>
-                      <path d="M12 12c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z"></path>
-                    </svg>
-                  </div>
-                  <h3 className="font-bold text-xl tracking-wide text-white transition-colors">
-                    Advanced Capabilities
-                  </h3>
-                </div>
-                <p className="text-gray-400 leading-relaxed mb-6">
-                  Beyond the basics, EduPeak includes powerful analytics, payment processing, live support, and comprehensive admin tools to manage every aspect of the learning platform.
-                </p>
-              </div>
-
-              {/* Feature Image */}
-              <div
-                className="relative w-full md:w-[calc(100%+1.5rem)] md:-mr-6 h-auto rounded-xl overflow-hidden group border-2 border-gray-400/30 hover:border-blue-500/50 transition-all duration-300 bg-gray-900/50 cursor-pointer"
-                onClick={() => handleImageClick('/images/admin-analytics-dashbord.png')}
-              >
-                <Image
-                  src="/images/admin-analytics-dashbord.png"
-                  alt="Analytics & Reporting Dashboard"
-                  width={1200}
-                  height={800}
-                  className="w-full h-auto object-contain rounded-xl"
-                  sizes="100vw"
-                />
-              </div>
-
-              {/* Interactive Feature Tags */}
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                {[
-                  'Real-time Analytics',
-                  'Stripe Payments',
-                  'Live Support Calls',
-                  'Blog System',
-                  'Announcements',
-                  'Multi-tenant Workspaces',
-                ].map((feature, index) => (
-                  <div
-                    key={feature}
-                    onMouseEnter={() => setHoveredFeature(feature)}
-                    onMouseLeave={() => setHoveredFeature(null)}
-                    className={`bg-gray-800/20 rounded-lg px-4 py-2.5 border border-gray-400/10 text-sm text-gray-300 cursor-pointer transition-all duration-300 ${
-                      hoveredFeature === feature
-                        ? 'bg-blue-500/10 border-blue-500/50 text-blue-300 scale-105'
-                        : 'hover:bg-gray-800/30 hover:border-gray-400/20'
-                    }`}
-                    style={{
-                      animationDelay: isVisible ? `${500 + index * 50}ms` : '0ms',
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`transition-transform duration-300 ${hoveredFeature === feature ? 'scale-125' : ''}`}>
-                        ✓
-                      </span>
-                      <span>{feature}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Technology Stack Journey */}
-        <div
-          className={`relative flex flex-col md:flex-row gap-8 mb-16 transition-all duration-700 delay-500 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          {/* Timeline Dot - Centered on border */}
-          <div className="absolute w-4 h-4 rounded-full bg-blue-500 border-4 border-gray-900 z-10 hidden md:block shadow-lg shadow-blue-500/50" style={{ left: '-6px' }} />
-          
-          <div className="md:ml-20 flex-1">
-            <div className="flex flex-col gap-6">
-              <div className="relative">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gray-800/50 flex items-center justify-center border border-gray-400/20">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-blue-400"
-                    >
-                      <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                      <path d="M2 17l10 5 10-5"></path>
-                      <path d="M2 12l10 5 10-5"></path>
-                    </svg>
-                  </div>
-                  <h3 className="font-bold text-xl tracking-wide text-white transition-colors">
-                    Built with Modern Technology
-                  </h3>
-                </div>
-                <p className="text-gray-400 leading-relaxed mb-6">
-                  EduPeak leverages cutting-edge technologies to deliver a fast, secure, and scalable learning platform.
-                </p>
-              </div>
-
-              {/* Tech Stack Tags */}
-              <div className="flex flex-wrap gap-3">
-                {[
-                  'Next.js 15',
-                  'React 19',
-                  'TypeScript',
-                  'PostgreSQL',
-                  'Prisma',
-                  'NextAuth',
-                  'Stripe',
-                  'AWS S3',
-                  'Stream.io',
-                  'Tailwind CSS',
-                  'Radix UI',
-                  'TipTap',
-                ].map((tech, index) => (
-                  <div
-                    key={tech}
-                    className={`flex h-9 items-center justify-center gap-1.5 px-5 rounded-full bg-gray-800/30 text-gray-300 border border-gray-400/20 transition-all duration-300 hover:scale-110 hover:border-blue-500/50 hover:text-blue-300 cursor-pointer ${
-                      isVisible
-                        ? 'opacity-100 translate-y-0'
-                        : 'opacity-0 translate-y-5'
-                    }`}
-                    style={{
-                      transitionDelay: isVisible ? `${600 + index * 50}ms` : '0ms',
-                    }}
-                  >
-                    <p className="text-xs whitespace-nowrap font-medium">{tech}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Project Highlights Journey */}
-        <div
-          className={`relative flex flex-col md:flex-row gap-8 mb-12 transition-all duration-700 delay-600 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          {/* Timeline Dot - Centered on border */}
-          <div className="absolute w-4 h-4 rounded-full bg-blue-500 border-4 border-gray-900 z-10 hidden md:block shadow-lg shadow-blue-500/50" style={{ left: '-6px' }} />
-          
-          <div className="md:ml-20 flex-1">
-            <div className="flex flex-col gap-6">
-              <div className="relative">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gray-800/50 flex items-center justify-center border border-gray-400/20">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-blue-400"
-                    >
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                    </svg>
-                  </div>
-                  <h3 className="font-bold text-xl tracking-wide text-white transition-colors">
-                    Project Highlights
-                  </h3>
-                </div>
-                <p className="text-gray-400 leading-relaxed mb-6">
-                  Explore the comprehensive feature set and see how EduPeak transforms online education.
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-4 w-full flex-wrap">
-                {projectConfig?.liveDemoLink && (
-                  <Link
-                    href={projectConfig.liveDemoLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative bg-gray-800/30 hover:bg-gray-800/50 uppercase text-xs transition-all hover:text-blue-400 rounded-full font-bold text-white flex items-center justify-center px-8 py-4 gap-2 transform hover:scale-105 active:scale-95 border border-gray-400/20 hover:border-blue-500/50"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="transition-transform duration-300 group-hover:scale-110"
-                    >
-                      <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path>
-                      <path d="M3.6 9h16.8"></path>
-                      <path d="M3.6 15h16.8"></path>
-                      <path d="M11.5 3a17 17 0 0 0 0 18"></path>
-                      <path d="M12.5 3a17 17 0 0 1 0 18"></path>
-                    </svg>
-                    <span>Live Demo</span>
-                  </Link>
-                )}
-                
-                {projectConfig?.showCodeLink && projectConfig?.codeLink ? (
-                  <Link
-                    href={projectConfig.codeLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative bg-gray-800/30 hover:bg-gray-800/50 uppercase text-xs transition-all hover:text-white rounded-full font-bold text-white flex items-center justify-center px-8 py-4 gap-2 transform hover:scale-105 active:scale-95 border border-gray-400/20 hover:border-gray-500/50"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="transition-transform duration-300 group-hover:scale-110"
-                    >
-                      <path d="M5.315 2.1c.791 -.113 1.9 .145 3.333 .966l.272 .161l.16 .1l.397 -.083a13.3 13.3 0 0 1 4.59 -.08l.456 .08l.396 .083l.161 -.1c1.385 -.84 2.487 -1.17 3.322 -1.148l.164 .008l.147 .017l.076 .014l.05 .011l.144 .047a1 1 0 0 1 .53 .514a5.2 5.2 0 0 1 .397 2.91l-.047 .267l-.046 .196l.123 .163c.574 .795 .93 1.728 1.03 2.707l.023 .295l.007 .272c0 3.855 -1.659 5.883 -4.644 6.68l-.245 .061l-.132 .029l.014 .161l.008 .157l.004 .365l-.002 .213l-.003 3.834a1 1 0 0 1 -.883 .993l-.117 .007h-6a1 1 0 0 1 -.993 -.883l-.007 -.117v-.734c-1.818 .26 -3.03 -.424 -4.11 -1.878l-.535 -.766c-.28 -.396 -.455 -.579 -.589 -.644l-.048 -.019a1 1 0 0 1 .564 -1.918c.642 .188 1.074 .568 1.57 1.239l.538 .769c.76 1.079 1.36 1.459 2.609 1.191l.001 -.678l-.018 -.168a5.03 5.03 0 0 1 -.021 -.824l.017 -.185l.019 -.12l-.108 -.024c-2.976 -.71 -4.703 -2.573 -4.875 -6.139l-.01 -.31l-.004 -.292a5.6 5.6 0 0 1 .908 -3.051l.152 -.222l.122 -.163l-.045 -.196a5.2 5.2 0 0 1 .145 -2.642l.1 -.282l.106 -.253a1 1 0 0 1 .529 -.514l.144 -.047l.154 -.03z"></path>
-                    </svg>
-                    <span>GitHub</span>
-                  </Link>
-                ) : projectConfig?.codeLink ? (
-                  <div className="group relative bg-gray-800/30 uppercase text-xs rounded-full font-bold text-gray-400 flex items-center justify-center px-8 py-4 gap-2 border border-gray-500/30 cursor-not-allowed">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    </svg>
-                    <span>Private Repo</span>
-                  </div>
-                ) : null}
-                
-                <Link
-                  href="/projects/edupeak"
-                  onClick={(e) => {
-                    // Scroll to top of projects section when clicking "View Full Journey"
-                    e.preventDefault();
-                    const projectsSection = document.getElementById('projects');
-                    if (projectsSection) {
-                      // Scroll to top of projects section smoothly
-                      projectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      // Navigate after scroll animation completes
-                      setTimeout(() => {
-                        window.location.href = '/projects/edupeak';
-                      }, 300);
-                    } else {
-                      window.location.href = '/projects/edupeak';
-                    }
-                  }}
-                  className="group relative bg-gray-800/30 hover:bg-gray-800/50 uppercase text-xs transition-all hover:text-blue-400 rounded-full font-bold text-white flex items-center justify-center px-8 py-4 gap-2 transform hover:scale-105 active:scale-95 border border-gray-400/20 hover:border-blue-500/50"
+          {/* Projects grid */}
+          <div className="grid gap-5 md:grid-cols-2 max-w-6xl mx-auto">
+            <AnimatePresence mode="popLayout">
+              {filtered.map((project, i) => (
+                <motion.div
+                  key={project.title}
+                  className="proj-card rounded-2xl overflow-hidden flex flex-col h-full group cursor-pointer"
+                  style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}
+                  layout
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ borderColor: `${project.color}40`, background: 'rgba(255,255,255,0.04)', y: -4 }}
+                  onClick={() => setSelectedProject(project)}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="transition-transform duration-300 group-hover:translate-x-1"
-                  >
-                    <path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"></path>
-                    <path d="M11 13l9 -9"></path>
-                    <path d="M15 4h5v5"></path>
-                  </svg>
-                  <span>View Full Journey</span>
-                </Link>
-              </div>
-            </div>
+                  {/* Card cover */}
+                  <div className="relative w-full aspect-[2.5/1] overflow-hidden">
+                    <Image
+                      src={project.cover}
+                      alt={project.title}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to top, var(--bg) 10%, transparent 80%)` }} />
+                  </div>
+
+                  <div className="p-5 pt-0 flex flex-col flex-1">
+                    <div className="w-10 h-1 rounded-full mb-4 transition-all duration-500 group-hover:w-16" style={{ background: project.color }} />
+
+                    <h3 className="text-xl sm:text-2xl font-bold mb-2 transition-colors duration-300" style={{ color: 'var(--fg)' }}>
+                      {project.title}
+                    </h3>
+
+                    <p className="text-sm mb-4 flex-grow leading-relaxed" style={{ color: 'var(--muted)' }}>{project.description}</p>
+
+                    <div className="flex flex-wrap gap-1.5 text-xs mb-4">
+                      {project.tags.slice(0, 4).map((tag) => (
+                        <span key={tag} className="px-2.5 py-1 rounded-md font-semibold tracking-tight" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>
+                          {tag}
+                        </span>
+                      ))}
+                      {project.tags.length > 4 && (
+                        <span className="px-2.5 py-1 rounded-md font-semibold tracking-tight" style={{ color: 'var(--muted)', opacity: 0.5 }}>+{project.tags.length - 4}</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between mt-auto pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div className="flex items-center gap-1.5">
+                        {project.live && <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#4ade80' }} />}
+                        <span className="text-[11px] font-mono uppercase tracking-wide" style={{ color: 'var(--muted)', opacity: 0.5 }}>
+                          {project.live ? 'Live' : project.github ? 'Open Source' : 'Private'}
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0" style={{ color: project.color }}>
+                        Explore →
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </section>
+
+      <AnimatePresence>
+        {selectedProject && <ProjectModal project={selectedProject} onClose={closeModal} />}
+      </AnimatePresence>
     </>
   );
 }

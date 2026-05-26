@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
+import Currently from '@/components/Currently';
+import SelectedWork from '@/components/SelectedWork';
+import LabSection from '@/components/LabSection';
+import WritingSection from '@/components/WritingSection';
+import LifeSection from '@/components/LifeSection';
 import TechStack from '@/components/TechStack';
 import WorkExperience from '@/components/WorkExperience';
 import ModernWebCapabilities from '@/components/ModernWebCapabilities';
@@ -74,26 +79,25 @@ export default function Home() {
       <section aria-label="Hero section">
         <Hero />
       </section>
-      <div className="h-full w-full mx-auto max-w-[60.5rem] px-6">
-        <main className="w-full min-h-screen h-full pb-10">
-          <section id="tech-stack" aria-label="Technology stack">
-            <TechStack />
-          </section>
-          <section id="work-experience" aria-label="Work experience">
-            <WorkExperience />
-          </section>
-          <section aria-label="Modern web capabilities">
-            <ModernWebCapabilities />
-          </section>
-          <section id="projects" aria-label="Projects">
-            <Projects />
-          </section>
-          <section id="contact" aria-label="Contact information">
-            <Contact />
-          </section>
-        </main>
-        <Footer />
-      </div>
+      <section aria-label="Currently working on">
+        <Currently />
+      </section>
+      <section aria-label="Writing">
+        <WritingSection />
+      </section>
+      <section id="stack" aria-label="Technology stack" style={{ scrollMarginTop: 80 }}>
+        <TechStack />
+      </section>
+      <section id="projects" aria-label="Projects" style={{ scrollMarginTop: 80 }}>
+        <Projects />
+      </section>
+      <section id="experience" aria-label="Work experience" style={{ scrollMarginTop: 80 }}>
+        <WorkExperience />
+      </section>
+      <section id="connect" aria-label="Contact information" style={{ scrollMarginTop: 80 }}>
+        <Contact />
+      </section>
+      <Footer />
     </>
   );
 }

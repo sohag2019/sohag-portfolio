@@ -2,22 +2,33 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
-const navLinks = [
+const primaryLinks = [
   { href: '/', label: 'Overview' },
-  { href: '/work', label: 'Showcase' },
-  { href: '/lab', label: 'Sandbox' },
-  { href: '/writing', label: 'Insights' },
-  { href: '/life', label: 'Beyond' },
-  { href: '/contact', label: 'Connect' },
+  { href: '/#experience', label: 'Work' },
+  { href: '/#projects', label: 'Projects' },
+  { href: '/#stack', label: 'Stack' },
+  { href: '/#connect', label: 'Contact' },
 ];
+
+const secondaryLinks = [
+  { href: '/lab', label: 'Lab', icon: '⬡', desc: 'Experiments & tools' },
+  { href: '/writing', label: 'Writing', icon: '✎', desc: 'Thoughts & articles' },
+  { href: '/life', label: 'Life', icon: '◐', desc: 'Outside of code' },
+];
+
+const allLinks = [...primaryLinks, ...secondaryLinks];
+
+const sectionIds = ['experience', 'projects', 'stack', 'connect'];
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [timeStr, setTimeStr] = useState({ hm: '', sec: '' });
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const pathname = usePathname();
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     const tick = () => {
@@ -38,6 +49,49 @@ export default function Header() {
     return () => clearInterval(id);
   }, []);
 
+  // Scroll spy: track which section is in view
+  useEffect(() => {
+    if (pathname !== '/') return;
+
+    const visible = new Map<string, number>();
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            visible.set(entry.target.id, entry.intersectionRatio);
+          } else {
+            visible.delete(entry.target.id);
+          }
+        });
+
+        if (visible.size === 0) {
+          setActiveSection(null);
+        } else {
+          let best = '';
+          let bestRatio = 0;
+          visible.forEach((ratio, id) => {
+            if (ratio > bestRatio) {
+              best = id;
+              bestRatio = ratio;
+            }
+          });
+          setActiveSection(best);
+        }
+      },
+      { rootMargin: '-80px 0px -40% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observerRef.current!.observe(el);
+    });
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, [pathname]);
+
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? 'hidden' : '';
     return () => {
@@ -56,9 +110,36 @@ export default function Header() {
   const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
 
   const isActive = (href: string) => {
-    if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
+    if (pathname !== '/') {
+      if (href === '/') return false;
+      if (href.startsWith('/#')) return false;
+      return pathname.startsWith(href);
+    }
+    // On homepage: use scroll spy
+    if (href.startsWith('/#')) {
+      const id = href.slice(2);
+      return activeSection === id;
+    }
+    if (href === '/') return !activeSection;
+    return false;
   };
+
+  const handleNavClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      if (href.startsWith('/#')) {
+        e.preventDefault();
+        const id = href.slice(2);
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (pathname !== '/') {
+          window.location.href = href;
+        }
+        setIsMenuOpen(false);
+      }
+    },
+    [pathname]
+  );
 
   return (
     <>
@@ -101,13 +182,15 @@ export default function Header() {
           </Link>
 
           {/* Center: Desktop Nav */}
-          <nav className="nav-desktop flex gap-0.5">
-            {navLinks.map((link) => {
+          <nav className="nav-desktop flex items-center gap-0">
+            {/* Primary links */}
+            {primaryLinks.map((link) => {
               const active = isActive(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={(e) => handleNavClick(e, link.href)}
                   className={`nav-link relative text-sm tracking-[-0.005em] whitespace-nowrap ${active ? 'nav-link-active' : ''}`}
                   style={{
                     padding: '8px 14px',
@@ -129,10 +212,31 @@ export default function Header() {
                 </Link>
               );
             })}
+
           </nav>
 
-          {/* Right: Time, Search, CTA (desktop) */}
+          {/* Right: Pills, Time, Search, CTA (desktop) */}
           <div className="nav-time-desktop flex items-center gap-4 shrink-0">
+            {/* Writing / Life chips */}
+            <div className="flex items-center gap-2">
+              {secondaryLinks.map((link) => {
+                const active = isActive(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                    className={`nav-pill ${active ? 'nav-pill-active' : ''}`}
+                  >
+                    <span className="nav-pill-icon">{link.icon}</span>
+                    <span className="nav-pill-label">{link.label}</span>
+                    <span className="nav-pill-arrow">↗</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <span className="nav-sep-dot" style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--hair-2)', display: 'inline-block' }} />
             <span
               className="font-mono text-[11px] tracking-[0.08em] uppercase whitespace-nowrap flex items-center"
               style={{ color: 'var(--muted)' }}
@@ -162,7 +266,8 @@ export default function Header() {
               </span>
             </button>
             <Link
-              href="/contact"
+              href="/#connect"
+              onClick={(e) => handleNavClick(e, '/#connect')}
               className="nav-cta-desktop text-[13px] font-medium whitespace-nowrap"
               style={{
                 padding: '8px 14px',
@@ -177,7 +282,8 @@ export default function Header() {
           {/* Right: CTA + Hamburger (mobile) */}
           <div className="nav-mobile-right flex items-center gap-3">
             <Link
-              href="/contact"
+              href="/#connect"
+              onClick={(e) => handleNavClick(e, '/#connect')}
               className="text-[12px] font-medium whitespace-nowrap"
               style={{
                 padding: '6px 12px',
@@ -238,15 +344,15 @@ export default function Header() {
           className="nav-mobile-sheet"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Nav Links */}
+          {/* Primary Nav Links */}
           <nav className="nav-mobile-links">
-            {navLinks.map((link, i) => {
+            {primaryLinks.map((link, i) => {
               const active = isActive(link.href);
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={(e) => { handleNavClick(e, link.href); setIsMenuOpen(false); }}
                   className="nav-mobile-item"
                   style={{
                     color: active ? 'var(--fg)' : 'var(--muted)',
@@ -279,7 +385,59 @@ export default function Header() {
               height: 1,
               background: 'var(--hair)',
               margin: '12px 24px',
-              transitionDelay: isMenuOpen ? `${navLinks.length * 60}ms` : '0ms',
+              transitionDelay: isMenuOpen ? `${primaryLinks.length * 60}ms` : '0ms',
+            }}
+          />
+
+          {/* Secondary links — separate page cards */}
+          <div
+            className="nav-mobile-secondary-wrap px-6"
+            style={{
+              opacity: isMenuOpen ? 1 : 0,
+              transform: isMenuOpen ? 'translateY(0)' : 'translateY(8px)',
+              transition: `opacity 0.4s, transform 0.4s`,
+              transitionDelay: isMenuOpen ? `${primaryLinks.length * 60 + 20}ms` : '0ms',
+            }}
+          >
+            <span
+              className="font-mono text-[10px] tracking-[0.12em] uppercase block mb-3"
+              style={{ color: 'var(--muted)', opacity: 0.35 }}
+            >
+              More from me
+            </span>
+            <div className="flex gap-3">
+              {secondaryLinks.map((link, i) => {
+                const active = isActive(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={(e) => { handleNavClick(e, link.href); setIsMenuOpen(false); }}
+                    className={`nav-pill-mobile ${active ? 'nav-pill-mobile-active' : ''}`}
+                    style={{
+                      transitionDelay: isMenuOpen ? `${(primaryLinks.length + i + 1) * 60 + 40}ms` : '0ms',
+                    }}
+                  >
+                    <span className="nav-pill-icon-mobile">{link.icon}</span>
+                    <div className="flex flex-col">
+                      <span className="text-[14px]" style={{ color: active ? 'var(--fg)' : 'var(--fg)', fontWeight: 500 }}>{link.label}</span>
+                      <span className="text-[11px]" style={{ color: 'var(--muted)', opacity: 0.6 }}>{link.desc}</span>
+                    </div>
+                    <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--muted)', opacity: 0.4 }}>↗</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div
+            className="nav-mobile-divider"
+            style={{
+              height: 1,
+              background: 'var(--hair)',
+              margin: '12px 24px',
+              transitionDelay: isMenuOpen ? `${allLinks.length * 60}ms` : '0ms',
             }}
           />
 
@@ -288,7 +446,7 @@ export default function Header() {
             className="nav-mobile-extras"
             style={{
               transitionDelay: isMenuOpen
-                ? `${navLinks.length * 60 + 40}ms`
+                ? `${allLinks.length * 60 + 40}ms`
                 : '0ms',
             }}
           >
@@ -327,13 +485,13 @@ export default function Header() {
             className="nav-mobile-cta-wrap"
             style={{
               transitionDelay: isMenuOpen
-                ? `${navLinks.length * 60 + 100}ms`
+                ? `${allLinks.length * 60 + 100}ms`
                 : '0ms',
             }}
           >
             <Link
-              href="/contact"
-              onClick={() => setIsMenuOpen(false)}
+              href="/#connect"
+              onClick={(e) => { handleNavClick(e, '/#connect'); setIsMenuOpen(false); }}
               className="nav-mobile-cta"
               style={{
                 border: '1px solid var(--fg)',
