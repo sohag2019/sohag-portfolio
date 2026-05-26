@@ -6,7 +6,7 @@ A modern, responsive portfolio website showcasing my work as a Full Stack Develo
 
 I'm **Sohag Hossain**, a Full Stack Developer with a passion for architecting scalable, enterprise-grade solutions across the full stack. I lead high-performing development teams and specialize in modern web technologies including React, Next.js, TypeScript, Node.js, Python, and PostgreSQL.
 
-### Current Role
+### Current Roles
 **Team Lead / Full Stack Developer** at Remote Talent Ltd. (Dhaka, Bangladesh)  
 *Leading teams to architect scalable, enterprise-grade solutions across the full stack*
 
@@ -22,7 +22,7 @@ I'm **Sohag Hossain**, a Full Stack Developer with a passion for architecting sc
 
 This portfolio website serves as a comprehensive showcase of my professional journey, technical skills, and project portfolio. It features a modern, dark-themed design with smooth animations and optimized performance.
 
-### Why This Project?
+### Why This Project ?
 
 This portfolio represents more than just a personal website—it's a demonstration of:
 
@@ -96,7 +96,7 @@ sohag-p/
 └── types/                 # TypeScript type definitions
 ```
 
-## Sections
+## Sectionss
 
 1. **Hero Section**: Introduction with profile photo and call-to-action buttons
 2. **Tech Stack**: Interactive display of technical skills across Frontend, Backend, Design, and Tools
