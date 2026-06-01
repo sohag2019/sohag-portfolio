@@ -129,7 +129,7 @@ function CustomScrollbar({ containerRef }: { containerRef: React.RefObject<HTMLD
   const [thumbHeight, setThumbHeight] = useState(40);
   const [trackHeight, setTrackHeight] = useState(0);
   const [visible, setVisible] = useState(false);
-  const hideTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const hideTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -146,7 +146,7 @@ function CustomScrollbar({ containerRef }: { containerRef: React.RefObject<HTMLD
       thumbY.set(maxScroll > 0 ? (scrollTop / maxScroll) * maxThumb : 0);
 
       setVisible(true);
-      clearTimeout(hideTimeout.current);
+      if (hideTimeout.current) clearTimeout(hideTimeout.current);
       hideTimeout.current = setTimeout(() => setVisible(false), 1200);
     };
 
@@ -154,7 +154,11 @@ function CustomScrollbar({ containerRef }: { containerRef: React.RefObject<HTMLD
     el.addEventListener('scroll', update, { passive: true });
     const ro = new ResizeObserver(update);
     ro.observe(el);
-    return () => { el.removeEventListener('scroll', update); ro.disconnect(); };
+    return () => {
+      el.removeEventListener('scroll', update);
+      ro.disconnect();
+      if (hideTimeout.current) clearTimeout(hideTimeout.current);
+    };
   }, [containerRef, thumbY]);
 
   if (trackHeight === 0) return null;
