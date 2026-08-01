@@ -2,44 +2,46 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import type { ContactContent, SocialPlatform } from '@/lib/types';
 
-const socialLinks = [
-  {
-    label: 'GitHub',
-    href: 'https://github.com/sohagdev',
-    display: 'github.com/sohagdev',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-        <path d="M9 18c-4.51 2-5-2-7-2" />
-      </svg>
-    ),
-  },
-  {
-    label: 'LinkedIn',
-    href: 'https://www.linkedin.com/in/sohagdev',
-    display: 'linkedin.com/in/sohagdev',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-        <rect width="4" height="12" x="2" y="9" />
-        <circle cx="4" cy="4" r="2" />
-      </svg>
-    ),
-  },
-  {
-    label: 'Discord',
-    href: 'https://discord.com/users/sohagdev',
-    display: 'sohagdev',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 17H7A5 5 0 0 1 7 7h2" />
-        <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
-        <line x1="8" x2="16" y1="12" y2="12" />
-      </svg>
-    ),
-  },
-];
+const platformIcons: Record<SocialPlatform, React.ReactNode> = {
+  github: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+      <path d="M9 18c-4.51 2-5-2-7-2" />
+    </svg>
+  ),
+  linkedin: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+      <rect width="4" height="12" x="2" y="9" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  ),
+  discord: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 17H7A5 5 0 0 1 7 7h2" />
+      <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
+      <line x1="8" x2="16" y1="12" y2="12" />
+    </svg>
+  ),
+  twitter: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5 1.5 9.9 4 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+    </svg>
+  ),
+  website: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  ),
+  other: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+    </svg>
+  ),
+};
 
 type FormatAction = 'bold' | 'italic' | 'underline' | 'link';
 
@@ -117,23 +119,39 @@ function RichEditor({ value, onChange }: { value: string; onChange: (v: string) 
   );
 }
 
-export default function Contact() {
+export default function Contact({ content }: { content: ContactContent }) {
+  const { heading, subheading, ctaHeading, ctaSubheading, email: contactEmail, resumeUrl, socialLinks } = content;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSend = async () => {
     if (!name.trim() || !email.trim() || !message.trim()) return;
     setSending(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setSending(false);
-    setSent(true);
-    setName('');
-    setEmail('');
-    setMessage('');
-    setTimeout(() => setSent(false), 4000);
+    setError(null);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name, email, message }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? 'Something went wrong. Please try again.');
+      }
+      setSent(true);
+      setName('');
+      setEmail('');
+      setMessage('');
+      setTimeout(() => setSent(false), 4000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Something went wrong.');
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -147,25 +165,32 @@ export default function Contact() {
       >
         {/* Header */}
         <div className="flex flex-col items-center mb-14 text-center">
+          <motion.p
+            className="section-kicker"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+          >
+            Next step
+          </motion.p>
           <motion.h2
-            className="text-3xl md:text-5xl lg:text-6xl font-black mb-6 tracking-tighter"
-            style={{ color: 'var(--fg)' }}
+            className="section-title"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            Get In Touch
+            {heading}
           </motion.h2>
           <motion.p
-            className="text-base md:text-lg lg:text-xl max-w-2xl mx-auto font-medium"
-            style={{ color: 'var(--muted)' }}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            className="section-lead mx-auto"
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.15 }}
+            transition={{ duration: 0.55, delay: 0.1 }}
           >
-            Let&apos;s build something great together. Always open to new opportunities and collaborations.
+            {subheading}
           </motion.p>
         </div>
 
@@ -180,35 +205,35 @@ export default function Contact() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <h3 className="text-3xl md:text-5xl font-black leading-tight tracking-tighter" style={{ color: 'var(--fg)' }}>
-              Let&apos;s build{' '}
-              <span style={{ color: '#3b82f6', textShadow: '0 0 30px rgba(59,130,246,0.3)' }}>better</span>{' '}
-              products.
+              {ctaHeading}
             </h3>
             <p className="text-lg md:text-xl font-medium max-w-md leading-relaxed" style={{ color: 'var(--muted)' }}>
-              Open for interesting opportunities or just a meaningful chat.
+              {ctaSubheading}
             </p>
 
             {/* CTA buttons */}
             <div className="flex flex-wrap gap-3">
               <a
-                href="mailto:sohag@example.com"
+                href={`mailto:${contactEmail}`}
                 className="contact-btn-primary px-6 py-3.5 rounded-full font-black text-base flex items-center gap-2"
                 style={{ background: 'var(--fg)', color: 'var(--bg)' }}
               >
                 Start a Conversation
               </a>
-              <a
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-btn-outline inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-black text-base"
-                style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'var(--fg)' }}
-              >
-                Resume
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M7 7h10v10" /><path d="M7 17 17 7" />
-                </svg>
-              </a>
+              {resumeUrl && (
+                <a
+                  href={resumeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="contact-btn-outline inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-black text-base"
+                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'var(--fg)' }}
+                >
+                  Resume
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                  </svg>
+                </a>
+              )}
             </div>
 
             {/* Social links */}
@@ -232,7 +257,7 @@ export default function Contact() {
                     style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}
                   >
                     <span className="transition-colors duration-300" style={{ color: 'var(--muted)' }}>
-                      {link.icon}
+                      {platformIcons[link.platform] ?? platformIcons.other}
                     </span>
                   </div>
                   <div className="flex-1 flex flex-col items-start text-left">
@@ -332,6 +357,12 @@ export default function Contact() {
                 >
                   {sent ? '✓ Message Sent!' : sending ? 'Sending...' : 'Send Message'}
                 </motion.button>
+
+                {error && (
+                  <p className="text-[11px] text-center" style={{ color: '#f87171' }}>
+                    {error}
+                  </p>
+                )}
 
                 <p className="text-[11px] text-center" style={{ color: 'var(--muted)', opacity: 0.3 }}>
                   I&apos;ll get back to you within 24 hours.

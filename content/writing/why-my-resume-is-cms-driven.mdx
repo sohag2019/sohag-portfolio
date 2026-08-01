@@ -1,0 +1,31 @@
+---
+title: "Why my \"Work\" section is CMS-driven"
+excerpt: "A resume that reads from a database is a small but real signal: I build functional systems, not static pages."
+tags: ["CMS", "Career", "Full-stack"]
+coverImage: "/images/hero_section.png"
+publishedAt: "2026-04-14"
+---
+
+Every entry under **Work** on this site is a database row, editable from an auth-gated dashboard — not a hardcoded array sitting in a component file.
+
+## Context → Constraint → Decision → Tradeoff → Result
+
+Hiring managers don't want a timeline of job titles. They want to see how you think under constraints. So each role is framed as a decision, with the tradeoff made explicit:
+
+| Field | What it answers |
+|---|---|
+| Context | What was the situation? |
+| Constraint | What was limiting the options? |
+| Decision | What did I actually do? |
+| Tradeoff | What did that decision cost? |
+| Result | What happened because of it? |
+
+That framing lives in structured fields in Postgres (via Supabase), which means I can add or edit an engagement from `/dashboard/work` without touching code or redeploying.
+
+<Callout type="note">
+This is deliberately scoped to Work and Projects — the two sections that genuinely benefit from being editable without a deploy. Writing doesn't need that; see the follow-up post on why.
+</Callout>
+
+## Why not just hardcode it?
+
+I could. Most portfolios do. But a resume that's backed by a real data layer — with row-level security, auth, and a proper admin UI — is a small, honest demonstration of the same skills the resume is trying to prove.

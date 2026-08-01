@@ -2,56 +2,47 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import type { WritingPost } from '@/lib/types';
 
-const articles = [
-  {
-    category: 'Architecture',
-    readTime: '7 min read',
-    date: 'Mar 2026',
-    title: 'Building a Multi-Tenant SaaS with Next.js and PostgreSQL',
-    excerpt:
-      'How to structure your database, handle tenant isolation, and scale your Next.js app without rewriting everything later.',
-    tag: 'Next.js',
-    href: '/writing',
-  },
-  {
-    category: 'DevOps',
-    readTime: '5 min read',
-    date: 'Jan 2026',
-    title: 'Zero-Downtime Deployments with Docker and GitHub Actions',
-    excerpt:
-      'A practical guide to setting up blue-green deployments, health checks, and auto-rollback for your containerized apps.',
-    tag: 'Docker',
-    href: '/writing',
-  },
-];
+function fmtDate(iso?: string) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleDateString('en-US', {
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return '';
+  }
+}
 
-export default function WritingSection() {
+export default function WritingSection({ posts = [] }: { posts?: WritingPost[] }) {
+  const articles = posts.slice(0, 4).map((p) => ({
+    category: p.tags[0] ?? 'Writing',
+    readTime: `${p.readingMinutes} min read`,
+    date: fmtDate(p.publishedAt),
+    title: p.title,
+    excerpt: p.excerpt,
+    tag: p.tags[1] ?? p.tags[0] ?? '',
+    href: `/writing/${p.slug}`,
+  }));
+
   return (
     <section className="py-24">
       <div className="nav-container">
         {/* Header */}
         <motion.div
-          className="flex gap-[18px] items-baseline mb-10"
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          className="mb-12"
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <motion.span
-            className="font-mono text-[48px] font-bold tracking-tight"
-            style={{ color: 'var(--hair)', lineHeight: 1 }}
-            initial={{ opacity: 0, scale: 0.5 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, type: 'spring' }}
-          >
-            04
-          </motion.span>
-          <div className="flex flex-col gap-1">
-            <span className="font-mono text-[11px] tracking-[0.08em] uppercase" style={{ color: 'var(--muted)', opacity: 0.5 }}>/ Writing</span>
-            <span className="text-[22px] font-medium tracking-[-0.02em]" style={{ color: 'var(--fg)' }}>From the archive</span>
-          </div>
+          <p className="section-kicker">Writing</p>
+          <h2 className="section-title">From the archive</h2>
+          <p className="section-lead">
+            Notes on building products, systems, and writing without ceremony.
+          </p>
         </motion.div>
 
         {/* Articles grid */}

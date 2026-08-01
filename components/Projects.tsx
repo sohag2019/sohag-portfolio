@@ -3,13 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import Image from 'next/image';
-
-interface ProjectFeature {
-  title: string;
-  desc: string;
-  icon: string;
-  image: string;
-}
+import type { Project } from '@/lib/types';
+import { seedProjects } from '@/lib/seed';
 
 interface Comment {
   id: string;
@@ -18,110 +13,6 @@ interface Comment {
   date: string;
   avatar: string;
 }
-
-interface Project {
-  title: string;
-  description: string;
-  longDesc: string;
-  tags: string[];
-  category: string;
-  github?: string;
-  live?: string;
-  color: string;
-  cover: string;
-  features: ProjectFeature[];
-  stats: { label: string; value: string }[];
-}
-
-const projects: Project[] = [
-  {
-    title: 'EduPeak LMS',
-    description: 'Full-featured LMS with 200+ features — course creation, analytics, payments, multi-tenant workspaces.',
-    longDesc: 'A comprehensive Learning Management System designed to deliver an exceptional educational experience. From course creation to analytics, payments to gamification, EduPeak provides everything needed for modern online learning.',
-    tags: ['NextJS', 'React', 'TypeScript', 'PostgreSQL', 'Prisma', 'Stripe'],
-    category: 'Web',
-    live: 'https://edupeak.vercel.app',
-    color: '#3b82f6',
-    cover: '/images/hero_section.png',
-    stats: [
-      { label: 'Features', value: '200+' },
-      { label: 'User Roles', value: '4' },
-      { label: 'Integrations', value: '10+' },
-    ],
-    features: [
-      { title: 'Course Management', desc: 'Create, organize, and publish courses with rich content — videos, quizzes, assignments, and downloadable resources.', icon: '📚', image: '/images/course-layout-progress-tracking.png' },
-      { title: 'Progress Tracking', desc: 'Real-time dashboards showing completion rates, quiz scores, time spent, and personalized learning paths.', icon: '📊', image: '/images/admin-analytics-dashbord.png' },
-      { title: 'Stripe Payments', desc: 'Full payment integration with subscriptions, one-time purchases, coupons, and automated invoicing.', icon: '💳', image: '/images/hero_section.png' },
-      { title: 'Multi-Tenant', desc: 'Isolated workspaces for different organizations with custom branding, domains, and user management.', icon: '🏢', image: '/images/course-layout-progress-tracking.png' },
-      { title: 'Live Support', desc: 'Built-in video calls and chat for real-time student support and live class sessions.', icon: '🎥', image: '/images/admin-analytics-dashbord.png' },
-      { title: 'Gamification', desc: 'Badges, certificates, leaderboards, and achievement systems to boost student engagement.', icon: '🏆', image: '/images/hero_section.png' },
-    ],
-  },
-  {
-    title: 'Dev Portfolio v2',
-    description: 'This site — built with Next.js, Framer Motion, and editorial design principles.',
-    longDesc: 'A personal portfolio rebuilt from scratch with a focus on editorial design, rich animations, and storytelling. Every section is crafted to communicate skills and experience through interactive visual narratives.',
-    tags: ['NextJS', 'React', 'TypeScript', 'TailwindCSS', 'Framer Motion'],
-    category: 'Web',
-    github: 'https://github.com/sohagdev',
-    color: '#a78bfa',
-    cover: '/images/hero_section.png',
-    stats: [
-      { label: 'Sections', value: '8+' },
-      { label: 'Animations', value: '50+' },
-      { label: 'Lighthouse', value: '95+' },
-    ],
-    features: [
-      { title: 'Scroll Animations', desc: 'Every section features unique scroll-triggered animations using Framer Motion with spring physics.', icon: '✨', image: '/images/hero_section.png' },
-      { title: '3D Interactions', desc: 'Mouse-following tilt effects, parallax layers, and depth-aware hover states throughout.', icon: '🎭', image: '/images/hero_section.png' },
-      { title: 'Responsive Design', desc: 'Pixel-perfect layouts across all devices with adaptive navigation and touch interactions.', icon: '📱', image: '/images/hero_section.png' },
-      { title: 'Dark Theme', desc: 'Carefully crafted dark color palette with CSS variables for consistent theming.', icon: '🌙', image: '/images/hero_section.png' },
-    ],
-  },
-  {
-    title: 'E-commerce Platform',
-    description: 'Full-stack e-commerce with real-time inventory, cart, payments, and admin dashboard.',
-    longDesc: 'A production-grade e-commerce platform with real-time inventory management, smart cart system, Stripe payment processing, and a comprehensive admin dashboard for managing products, orders, and customers.',
-    tags: ['NextJS', 'Node.js', 'MongoDB', 'Stripe', 'TailwindCSS'],
-    category: 'Web',
-    color: '#4ade80',
-    cover: '/images/hero_section.png',
-    stats: [
-      { label: 'Products', value: '1K+' },
-      { label: 'API Routes', value: '40+' },
-      { label: 'Uptime', value: '99.9%' },
-    ],
-    features: [
-      { title: 'Smart Cart', desc: 'Persistent cart with real-time stock validation, quantity limits, and automatic price calculations.', icon: '🛒', image: '/images/hero_section.png' },
-      { title: 'Payment Flow', desc: 'Secure Stripe checkout with saved cards, order confirmation, and automated receipt emails.', icon: '💰', image: '/images/hero_section.png' },
-      { title: 'Admin Dashboard', desc: 'Full admin panel for product management, order tracking, customer insights, and revenue analytics.', icon: '📈', image: '/images/hero_section.png' },
-      { title: 'Inventory System', desc: 'Real-time stock tracking with low-stock alerts, auto-reorder triggers, and variant management.', icon: '📦', image: '/images/hero_section.png' },
-    ],
-  },
-  {
-    title: 'REST API Toolkit',
-    description: 'Production-ready API boilerplate with auth, rate limiting, validation, and auto-docs.',
-    longDesc: 'A battle-tested REST API starter kit designed for rapid backend development. Includes authentication, authorization, input validation, rate limiting, error handling, and auto-generated Swagger documentation.',
-    tags: ['Node.js', 'Express', 'PostgreSQL', 'Docker', 'Swagger'],
-    category: 'CLI',
-    github: 'https://github.com/sohagdev',
-    color: '#f472b6',
-    cover: '/images/hero_section.png',
-    stats: [
-      { label: 'Endpoints', value: '30+' },
-      { label: 'Test Coverage', value: '90%' },
-      { label: 'Docker Ready', value: '✓' },
-    ],
-    features: [
-      { title: 'Auth System', desc: 'JWT + refresh tokens, OAuth2, role-based access control, and session management out of the box.', icon: '🔐', image: '/images/hero_section.png' },
-      { title: 'Validation', desc: 'Zod-powered request validation with auto-generated error messages and type inference.', icon: '✅', image: '/images/hero_section.png' },
-      { title: 'Rate Limiting', desc: 'Configurable per-route rate limiting with Redis backing and sliding window algorithm.', icon: '🛡️', image: '/images/hero_section.png' },
-      { title: 'Auto Docs', desc: 'Swagger/OpenAPI documentation auto-generated from route definitions and Zod schemas.', icon: '📄', image: '/images/hero_section.png' },
-    ],
-  },
-];
-
-const filters = ['All', 'Web', 'CLI'];
 
 // ── Custom Scrollbar ──
 function CustomScrollbar({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
@@ -374,7 +265,7 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
 
   return (
     <motion.div
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
+      className="proj-modal-overlay fixed inset-0 z-[100] flex items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -384,15 +275,15 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
       {/* Backdrop */}
       <motion.div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(16px)' }} />
 
-      {/* Modal container */}
+      {/* Modal container — keeps breathing room top & bottom */}
       <motion.div
-        className="relative w-full max-w-[820px] max-h-[92vh] sm:max-h-[88vh] rounded-t-3xl sm:rounded-2xl overflow-hidden flex flex-col"
+        className="proj-modal-panel relative w-full overflow-hidden flex flex-col"
         style={{ background: '#0c0c0c', border: `1px solid ${project.color}20`, boxShadow: `0 0 80px ${project.color}08, 0 25px 60px rgba(0,0,0,0.5)` }}
         onClick={(e) => e.stopPropagation()}
-        initial={{ opacity: 0, y: 60, scale: 0.95 }}
+        initial={{ opacity: 0, y: 40, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 40, scale: 0.97 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        exit={{ opacity: 0, y: 24, scale: 0.98 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       >
         {/* Floating close button */}
         <motion.button
@@ -409,8 +300,11 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
         <div ref={scrollRef} className="flex-1 overflow-y-auto proj-modal-scroll relative">
           <CustomScrollbar containerRef={scrollRef} />
 
-          {/* ── Hero Cover ── */}
-          <div className="relative w-full aspect-[2.2/1] overflow-hidden">
+          {/* ── Hero Cover (shared-element morph from card) ── */}
+          <motion.div
+            className="relative w-full aspect-[2.2/1] overflow-hidden"
+            layoutId={`cover-${project.slug}`}
+          >
             <Image src={project.cover} alt={project.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 820px" />
             <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #0c0c0c 0%, rgba(12,12,12,0.6) 40%, transparent 100%)' }} />
 
@@ -438,7 +332,7 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
                 {project.title}
               </h2>
             </motion.div>
-          </div>
+          </motion.div>
 
           <div className="px-6 sm:px-8 pb-8">
             {/* ── Quick Actions (sticky-ish) ── */}
@@ -490,6 +384,61 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
             >
               {project.longDesc}
             </motion.p>
+
+            {/* ── Your contribution ── */}
+            {project.contribution && (
+              <motion.div
+                className="mb-8 p-4 rounded-xl"
+                style={{ border: `1px solid ${project.color}20`, background: `${project.color}08` }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.32 }}
+              >
+                <div className="font-mono text-[10px] tracking-[0.1em] uppercase mb-2" style={{ color: project.color }}>
+                  My contribution
+                </div>
+                <p className="text-[14px] leading-[1.7]" style={{ color: 'var(--fg)' }}>
+                  {project.contribution}
+                </p>
+              </motion.div>
+            )}
+
+            {/* ── Decision log (why X over Y) ── */}
+            {project.decisionLog?.length > 0 && (
+              <motion.div
+                className="mb-10"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.36 }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="w-8 h-px" style={{ background: project.color }} />
+                  <h3 className="font-mono text-[11px] tracking-[0.1em] uppercase font-bold" style={{ color: 'var(--fg)' }}>
+                    Decision log
+                  </h3>
+                </div>
+                <div className="flex flex-col gap-3">
+                  {project.decisionLog.map((d, i) => (
+                    <motion.div
+                      key={i}
+                      className="p-4 rounded-xl"
+                      style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 + i * 0.06 }}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-[13px] mt-0.5" style={{ color: project.color }}>→</span>
+                        <div>
+                          <div className="text-[14px] font-semibold mb-1" style={{ color: 'var(--fg)' }}>{d.choice}</div>
+                          <div className="text-[13px] leading-[1.65]" style={{ color: 'var(--muted)' }}>{d.reason}</div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
             {/* ── Stats ── */}
             <motion.div
@@ -637,9 +586,12 @@ function ProjectModal({ project, onClose }: { project: Project; onClose: () => v
 }
 
 // ── Main Component ──
-export default function Projects() {
+export default function Projects({ items }: { items?: Project[] }) {
+  const projects = items && items.length ? items : seedProjects;
   const [activeFilter, setActiveFilter] = useState('All');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  const filters = ['All', ...Array.from(new Set(projects.map((p) => p.category)))];
 
   const filtered = activeFilter === 'All'
     ? projects
@@ -649,22 +601,27 @@ export default function Projects() {
 
   return (
     <>
-      <section className="w-full flex flex-col items-center px-4 sm:px-6 lg:px-8 pt-28 pb-24 relative z-10 overflow-hidden">
-        <div className="absolute -z-10 pointer-events-none" style={{ width: 600, height: 600, top: '-5%', right: '-10%', background: 'radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(80px)' }} />
-        <div className="absolute -z-10 pointer-events-none" style={{ width: 500, height: 500, bottom: '0', left: '-8%', background: 'radial-gradient(circle, rgba(167,139,250,0.04) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(80px)' }} />
-
-        <motion.div className="w-full max-w-6xl" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
-          {/* Header */}
-          <div className="flex flex-col items-center mb-14 text-center">
+      <section className="py-24 relative overflow-hidden">
+        <motion.div
+          className="nav-container"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="text-center mb-14">
             <motion.div
-              className="inline-flex items-center gap-2 mb-5 px-4 py-1.5 rounded-full"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6"
               style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: -10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.5 }}
             >
-              <span className="text-xs font-medium tracking-wide" style={{ color: 'var(--muted)' }}>Click any project to explore</span>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--fg)' }} />
+              <span className="text-xs font-medium tracking-wide" style={{ color: 'var(--muted)' }}>
+                Click any project to explore
+              </span>
             </motion.div>
 
             <motion.h2
@@ -689,7 +646,6 @@ export default function Projects() {
             </motion.p>
           </div>
 
-          {/* Filter tabs */}
           <motion.div
             className="flex flex-wrap justify-center gap-2 mb-10"
             initial={{ opacity: 0, y: 10 }}
@@ -700,6 +656,7 @@ export default function Projects() {
             {filters.map((f) => (
               <button
                 key={f}
+                type="button"
                 onClick={() => setActiveFilter(f)}
                 className="px-5 py-2 rounded-full text-sm font-black uppercase tracking-widest transition-all duration-300 cursor-pointer"
                 style={{
@@ -713,12 +670,11 @@ export default function Projects() {
             ))}
           </motion.div>
 
-          {/* Projects grid */}
           <div className="grid gap-5 md:grid-cols-2 max-w-6xl mx-auto">
             <AnimatePresence mode="popLayout">
               {filtered.map((project, i) => (
                 <motion.div
-                  key={project.title}
+                  key={project.slug}
                   className="proj-card rounded-2xl overflow-hidden flex flex-col h-full group cursor-pointer"
                   style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)' }}
                   layout
@@ -726,10 +682,13 @@ export default function Projects() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.4, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                  whileHover={{ borderColor: `${project.color}40`, background: 'rgba(255,255,255,0.04)', y: -4 }}
+                  whileHover={{
+                    borderColor: `${project.color}40`,
+                    background: 'rgba(255,255,255,0.04)',
+                    y: -4,
+                  }}
                   onClick={() => setSelectedProject(project)}
                 >
-                  {/* Card cover */}
                   <div className="relative w-full aspect-[2.5/1] overflow-hidden">
                     <Image
                       src={project.cover}
@@ -738,37 +697,72 @@ export default function Projects() {
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
-                    <div className="absolute inset-0" style={{ background: `linear-gradient(to top, var(--bg) 10%, transparent 80%)` }} />
+                    <div
+                      className="absolute inset-0"
+                      style={{ background: 'linear-gradient(to top, var(--bg) 10%, transparent 80%)' }}
+                    />
                   </div>
 
                   <div className="p-5 pt-0 flex flex-col flex-1">
-                    <div className="w-10 h-1 rounded-full mb-4 transition-all duration-500 group-hover:w-16" style={{ background: project.color }} />
+                    <div
+                      className="w-10 h-1 rounded-full mb-4 transition-all duration-500 group-hover:w-16"
+                      style={{ background: project.color }}
+                    />
 
-                    <h3 className="text-xl sm:text-2xl font-bold mb-2 transition-colors duration-300" style={{ color: 'var(--fg)' }}>
+                    <h3
+                      className="text-xl sm:text-2xl font-bold mb-2 transition-colors duration-300"
+                      style={{ color: 'var(--fg)' }}
+                    >
                       {project.title}
                     </h3>
 
-                    <p className="text-sm mb-4 flex-grow leading-relaxed" style={{ color: 'var(--muted)' }}>{project.description}</p>
+                    <p className="text-sm mb-4 flex-grow leading-relaxed" style={{ color: 'var(--muted)' }}>
+                      {project.description}
+                    </p>
 
                     <div className="flex flex-wrap gap-1.5 text-xs mb-4">
                       {project.tags.slice(0, 4).map((tag) => (
-                        <span key={tag} className="px-2.5 py-1 rounded-md font-semibold tracking-tight" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}>
+                        <span
+                          key={tag}
+                          className="px-2.5 py-1 rounded-md font-semibold tracking-tight"
+                          style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            color: 'rgba(255,255,255,0.6)',
+                          }}
+                        >
                           {tag}
                         </span>
                       ))}
                       {project.tags.length > 4 && (
-                        <span className="px-2.5 py-1 rounded-md font-semibold tracking-tight" style={{ color: 'var(--muted)', opacity: 0.5 }}>+{project.tags.length - 4}</span>
+                        <span
+                          className="px-2.5 py-1 rounded-md font-semibold tracking-tight"
+                          style={{ color: 'var(--muted)', opacity: 0.5 }}
+                        >
+                          +{project.tags.length - 4}
+                        </span>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between mt-auto pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div
+                      className="flex items-center justify-between mt-auto pt-3"
+                      style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+                    >
                       <div className="flex items-center gap-1.5">
-                        {project.live && <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#4ade80' }} />}
-                        <span className="text-[11px] font-mono uppercase tracking-wide" style={{ color: 'var(--muted)', opacity: 0.5 }}>
+                        {project.live && (
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#4ade80' }} />
+                        )}
+                        <span
+                          className="text-[11px] font-mono uppercase tracking-wide"
+                          style={{ color: 'var(--muted)', opacity: 0.5 }}
+                        >
                           {project.live ? 'Live' : project.github ? 'Open Source' : 'Private'}
                         </span>
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0" style={{ color: project.color }}>
+                      <span
+                        className="text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0"
+                        style={{ color: project.color }}
+                      >
                         Explore →
                       </span>
                     </div>

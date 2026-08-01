@@ -1,0 +1,49 @@
+---
+title: "Writing without a CMS"
+excerpt: "This blog used to be a Supabase table with a broken article page. Here's why I tore that out for plain MDX files."
+tags: ["Architecture", "Next.js", "Writing"]
+coverImage: "/images/hero_section.png"
+publishedAt: "2026-08-01"
+trending: true
+---
+
+For a while, every post on this site lived as a row in a `writing` table, edited through an admin panel at `/dashboard/writing`. It worked, technically — but I never once opened that panel to actually write anything.
+
+## The problem with a CMS for a blog of one
+
+A CMS earns its keep when multiple people need to publish without touching code, or when non-technical editors need a safe, constrained interface. Neither applies here. I'm the only author, I'm comfortable in a text editor, and the extra layer — auth, a database table, a form UI, image upload plumbing — was pure overhead for a blog that had two posts.
+
+<Callout type="tip">
+If you're the only person who will ever publish, a CMS is solving a problem you don't have yet.
+</Callout>
+
+## What replaced it
+
+Posts are now `.mdx` files in `content/writing/`, each with a small frontmatter block:
+
+```md
+---
+title: "Post title"
+excerpt: "One or two sentences for the card and social preview."
+tags: ["Tag One", "Tag Two"]
+coverImage: "/images/my-cover.jpg"
+publishedAt: "2026-08-01"
+trending: true
+---
+
+Regular Markdown content, plus a few custom components:
+
+<Video src="/videos/demo.mp4" caption="Optional caption" />
+<YouTube id="dQw4w9WgXcQ" />
+<Callout type="warning">Something worth flagging.</Callout>
+```
+
+`lib/writing.ts` reads that directory at request time, parses the frontmatter with `gray-matter`, and estimates reading time from the word count if I don't set one manually. `next-mdx-remote/rsc` compiles the body to React on the server, with syntax highlighting via `rehype-pretty-code` and heading anchors via `rehype-slug`.
+
+## What I got out of it
+
+- **No login, no admin UI, no database round-trip** — publishing a post is `git add`, `git commit`, deploy.
+- **Real version history** — every edit is a commit, not an overwritten row.
+- **A working article page** — the old CMS version never actually had one; clicking a post 404'd. This one has a table of contents, a reading-progress bar, syntax-highlighted code, and a share bar with proper Open Graph previews.
+
+The `Work` and `Projects` sections stay on the Supabase-backed dashboard — those genuinely change often enough, and independently enough of a code deploy, to justify it. Writing didn't.

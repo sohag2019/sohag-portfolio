@@ -17,10 +17,10 @@ const workLinks = [
 
 const navLinks = [
   { label: 'Overview', href: '/' },
-  { label: 'Showcase', href: '/work' },
-  { label: 'Sandbox', href: '/lab' },
-  { label: 'Insights', href: '/writing' },
-  { label: 'Connect', href: '/contact' },
+  { label: 'Experience', href: '/#experience' },
+  { label: 'Projects', href: '/#projects' },
+  { label: 'Writing', href: '/writing' },
+  { label: 'Contact', href: '/#connect' },
 ];
 
 export default function Footer() {
@@ -198,9 +198,6 @@ export default function Footer() {
               </a>
               <Link href="/writing" className="footer-nav-link text-sm" style={{ color: 'var(--fg)' }}>
                 Blog
-              </Link>
-              <Link href="/lab" className="footer-nav-link text-sm" style={{ color: 'var(--fg)' }}>
-                Experiments
               </Link>
             </div>
           </div>

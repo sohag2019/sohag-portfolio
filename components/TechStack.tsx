@@ -1,160 +1,131 @@
 'use client';
 
-import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import type { StackStat, StackLevel } from '@/lib/types';
+import { seedStack } from '@/lib/seed';
+import { EASE_EXPO, VIEWPORT } from '@/lib/motion';
 
-interface Skill {
-  name: string;
-  icon: string;
-  invert?: boolean;
+const categoryOrder = ['Frontend', 'Backend', 'DSL-CMS', 'Tooling'];
+const categoryColor: Record<string, string> = {
+  Frontend: '#3b82f6',
+  Backend: '#4ade80',
+  'DSL-CMS': '#a78bfa',
+  Tooling: '#f472b6',
+};
+const levelMeta: Record<StackLevel, { label: string; color: string }> = {
+  learning: { label: 'Learning', color: '#fbbf24' },
+  comfortable: { label: 'Comfortable', color: '#60a5fa' },
+  expert: { label: 'Expert', color: '#4ade80' },
+};
+
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  if (!data.length) return null;
+  const max = Math.max(...data, 1);
+  const w = 72;
+  const h = 20;
+  const step = w / (data.length - 1 || 1);
+  const pts = data.map((v, i) => `${i * step},${h - (v / max) * h}`).join(' ');
+  return (
+    <svg width={w} height={h} className="overflow-visible">
+      <motion.polyline
+        points={pts}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0, opacity: 0 }}
+        whileInView={{ pathLength: 1, opacity: 0.9 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, ease: EASE_EXPO }}
+      />
+    </svg>
+  );
 }
 
-interface Category {
-  title: string;
-  color: string;
-  glow: string;
-  skills: Skill[];
-}
-
-const categories: Category[] = [
-  {
-    title: 'Frontend',
-    color: '#3b82f6',
-    glow: 'rgba(59,130,246,0.15)',
-    skills: [
-      { name: 'React', icon: 'https://cdn.simpleicons.org/react' },
-      { name: 'Vite', icon: 'https://cdn.simpleicons.org/vite' },
-      { name: 'TailwindCSS', icon: 'https://cdn.simpleicons.org/tailwindcss' },
-      { name: 'Next.js', icon: 'https://cdn.simpleicons.org/nextdotjs', invert: true },
-      { name: 'Shadcn-UI', icon: 'https://cdn.simpleicons.org/shadcnui', invert: true },
-      { name: 'TypeScript', icon: 'https://cdn.simpleicons.org/typescript' },
-    ],
-  },
-  {
-    title: 'Backend',
-    color: '#4ade80',
-    glow: 'rgba(74,222,128,0.15)',
-    skills: [
-      { name: 'Node.js', icon: 'https://cdn.simpleicons.org/nodedotjs' },
-      { name: 'Express.js', icon: 'https://cdn.simpleicons.org/express', invert: true },
-      { name: 'MongoDB', icon: 'https://cdn.simpleicons.org/mongodb' },
-      { name: 'MySQL', icon: 'https://cdn.simpleicons.org/mysql' },
-      { name: 'PostgreSQL', icon: 'https://cdn.simpleicons.org/postgresql' },
-    ],
-  },
-  {
-    title: 'Tools',
-    color: '#f472b6',
-    glow: 'rgba(244,114,182,0.15)',
-    skills: [
-      { name: 'Git', icon: 'https://cdn.simpleicons.org/git' },
-      { name: 'Python', icon: 'https://cdn.simpleicons.org/python' },
-      { name: 'Docker', icon: 'https://cdn.simpleicons.org/docker' },
-      { name: 'Prisma', icon: 'https://cdn.simpleicons.org/prisma', invert: true },
-      { name: 'Redux/Zustand', icon: 'https://cdn.simpleicons.org/redux' },
-    ],
-  },
-];
-
-function SkillTile({ skill, color, glow, delay }: { skill: Skill; color: string; glow: string; delay: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [hovered, setHovered] = useState(false);
-
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useSpring(useTransform(y, [-30, 30], [6, -6]), { stiffness: 200, damping: 20 });
-  const rotateY = useSpring(useTransform(x, [-30, 30], [-6, 6]), { stiffness: 200, damping: 20 });
-
-  const handleMouse = (e: React.MouseEvent) => {
-    const rect = ref.current?.getBoundingClientRect();
-    if (!rect) return;
-    x.set(e.clientX - rect.left - rect.width / 2);
-    y.set(e.clientY - rect.top - rect.height / 2);
-  };
-
-  const handleLeave = () => {
-    x.set(0);
-    y.set(0);
-    setHovered(false);
-  };
+function StackTile({ stat, delay }: { stat: StackStat; delay: number }) {
+  const reduced = useReducedMotion() ?? false;
+  const [hover, setHover] = useState(false);
+  const color = categoryColor[stat.category] ?? '#3b82f6';
+  const level = levelMeta[stat.level] ?? levelMeta.comfortable;
 
   return (
     <motion.div
-      ref={ref}
-      className="group relative flex flex-col items-center gap-2 p-2 rounded-2xl cursor-default"
-      style={{
-        border: '1px solid rgba(255,255,255,0.05)',
-        background: 'rgba(255,255,255,0.02)',
-        perspective: 500,
-        rotateX,
-        rotateY,
-      }}
-      onMouseMove={handleMouse}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={handleLeave}
-      initial={{ opacity: 0, y: 10 }}
+      className="relative p-4 rounded-2xl"
+      style={{ border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}
+      initial={reduced ? { opacity: 0 } : { opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.35, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={VIEWPORT}
+      transition={{ duration: 0.4, delay, ease: EASE_EXPO }}
+      whileHover={reduced ? undefined : { y: -4 }}
+      onHoverStart={() => setHover(true)}
+      onHoverEnd={() => setHover(false)}
     >
-      {/* Glow */}
-      <motion.div
-        className="absolute inset-0 rounded-2xl -z-10"
-        style={{ background: `radial-gradient(circle at center, ${glow} 0%, transparent 70%)` }}
-        animate={{ opacity: hovered ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
-      />
+      <div className="flex items-center gap-3 mb-3">
+        {stat.icon && (
+          <div className="w-7 h-7 shrink-0 flex items-center justify-center">
+            <Image
+              src={stat.icon}
+              alt={stat.name}
+              width={28}
+              height={28}
+              className={`w-full h-full object-contain${stat.invert ? ' invert' : ''}`}
+              unoptimized
+            />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-bold truncate" style={{ color: 'var(--fg)' }}>
+            {stat.name}
+          </div>
+          <div className="font-mono text-[10px] uppercase tracking-wider" style={{ color: level.color }}>
+            {level.label}
+          </div>
+        </div>
+        <Sparkline data={stat.sparkline} color={color} />
+      </div>
 
-      {/* Border glow */}
-      <motion.div
-        className="absolute inset-[-1px] rounded-2xl -z-10 pointer-events-none"
-        style={{ border: `1px solid ${color}` }}
-        animate={{ opacity: hovered ? 0.4 : 0 }}
-        transition={{ duration: 0.3 }}
-      />
-
-      {/* Icon */}
-      <motion.div
-        className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center"
-        animate={{ scale: hovered ? 1.15 : 1, y: hovered ? -3 : 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-      >
-        <Image
-          src={skill.icon}
-          alt={skill.name}
-          width={40}
-          height={40}
-          className={`w-full h-full object-contain${skill.invert ? ' invert' : ''}`}
-          unoptimized
-        />
-      </motion.div>
-
-      {/* Name */}
-      <span
-        className="text-[10px] sm:text-xs font-bold uppercase tracking-tighter text-center transition-colors duration-300"
-        style={{ color: hovered ? 'var(--fg)' : 'var(--muted)' }}
-      >
-        {skill.name}
-      </span>
-
-      {/* Shine sweep */}
-      <motion.div
-        className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none"
-        animate={{ opacity: hovered ? 1 : 0 }}
-      >
+      {/* Usage bar (derived from commit/byte frequency) */}
+      <div className="h-[3px] rounded-full overflow-hidden" style={{ background: 'var(--hair)' }}>
         <motion.div
-          className="absolute top-0 w-[40%] h-full"
-          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)' }}
-          animate={hovered ? { left: ['-40%', '140%'] } : { left: '-40%' }}
-          transition={{ duration: 0.7, ease: 'easeInOut' }}
+          className="h-full rounded-full"
+          style={{ background: `linear-gradient(90deg, ${color}, ${color}88)` }}
+          initial={{ width: 0 }}
+          whileInView={{ width: `${stat.percent}%` }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: delay + 0.1, ease: 'easeOut' }}
         />
+      </div>
+
+      {/* Projects that used it — revealed on hover */}
+      <motion.div
+        initial={false}
+        animate={{ height: hover && stat.projects.length ? 'auto' : 0, opacity: hover && stat.projects.length ? 1 : 0 }}
+        transition={{ duration: 0.25 }}
+        style={{ overflow: 'hidden' }}
+      >
+        <div className="flex flex-wrap gap-1.5 pt-3">
+          {stat.projects.map((p) => (
+            <span
+              key={p}
+              className="font-mono text-[9px] uppercase tracking-wide px-2 py-0.5 rounded"
+              style={{ background: `${color}12`, color: `${color}cc` }}
+            >
+              {p}
+            </span>
+          ))}
+        </div>
       </motion.div>
     </motion.div>
   );
 }
 
-export default function TechStack() {
+export default function TechStack({ stats }: { stats?: StackStat[] }) {
+  const data = stats && stats.length ? stats : seedStack;
+  const categories = categoryOrder.filter((c) => data.some((s) => s.category === c));
+
   return (
     <section className="w-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 pt-32 pb-24 relative z-10">
       <motion.div
@@ -164,66 +135,72 @@ export default function TechStack() {
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
       >
-        {/* Header */}
         <div className="flex flex-col items-center mb-12 text-center">
+          <motion.p
+            className="section-kicker"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, ease: EASE_EXPO }}
+          >
+            Tools & languages
+          </motion.p>
           <motion.h2
-            className="text-3xl md:text-5xl lg:text-6xl font-black mb-6 tracking-tighter"
-            style={{ color: 'var(--fg)' }}
+            className="section-title"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.6, ease: EASE_EXPO }}
           >
             My Stack
           </motion.h2>
           <motion.p
-            className="text-base md:text-lg lg:text-xl max-w-2xl mx-auto font-medium"
-            style={{ color: 'var(--muted)' }}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            className="section-lead mx-auto"
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.15 }}
+            transition={{ duration: 0.55, delay: 0.1, ease: EASE_EXPO }}
           >
-            A curated selection of technologies I use to build high-performance products.
+            Derived, not asserted — ranked by actual usage frequency from GitHub
+            commit language stats. Hover to see where each is used.
           </motion.p>
         </div>
 
-        {/* 2x2 Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          {categories.map((cat, catIdx) => (
-            <motion.div
-              key={cat.title}
-              className="p-4 rounded-3xl flex flex-col"
-              style={{ border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: catIdx * 0.1 }}
-            >
-              {/* Category title */}
-              <div className="flex items-center gap-4 mb-6">
-                <h3
-                  className="text-sm font-black uppercase tracking-widest pl-3"
-                  style={{ color: cat.color, borderLeft: `2px solid ${cat.color}` }}
-                >
-                  {cat.title}
-                </h3>
-              </div>
+          {categories.map((cat, catIdx) => {
+            const items = data
+              .filter((s) => s.category === cat)
+              .sort((a, b) => b.count - a.count);
+            return (
+              <motion.div
+                key={cat}
+                className="p-4 rounded-3xl flex flex-col"
+                style={{ border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.02)' }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: catIdx * 0.1 }}
+              >
+                <div className="flex items-center gap-4 mb-5">
+                  <h3
+                    className="text-sm font-black uppercase tracking-widest pl-3"
+                    style={{ color: categoryColor[cat], borderLeft: `2px solid ${categoryColor[cat]}` }}
+                  >
+                    {cat}
+                  </h3>
+                  <span className="font-mono text-[10px]" style={{ color: 'var(--muted)', opacity: 0.4 }}>
+                    {items.length}
+                  </span>
+                </div>
 
-              {/* 4-col skills grid */}
-              <div className="grid grid-cols-4 gap-2">
-                {cat.skills.map((skill, i) => (
-                  <SkillTile
-                    key={skill.name}
-                    skill={skill}
-                    color={cat.color}
-                    glow={cat.glow}
-                    delay={catIdx * 0.1 + i * 0.04}
-                  />
-                ))}
-              </div>
-            </motion.div>
-          ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {items.map((s, i) => (
+                    <StackTile key={s.name} stat={s} delay={catIdx * 0.05 + i * 0.04} />
+                  ))}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </motion.div>
     </section>

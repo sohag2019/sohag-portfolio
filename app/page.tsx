@@ -1,21 +1,32 @@
 import type { Metadata } from 'next';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
+import Snapshot from '@/components/Snapshot';
+import LiveStatusStrip from '@/components/LiveStatusStrip';
 import Currently from '@/components/Currently';
-import SelectedWork from '@/components/SelectedWork';
-import LabSection from '@/components/LabSection';
 import WritingSection from '@/components/WritingSection';
-import LifeSection from '@/components/LifeSection';
 import TechStack from '@/components/TechStack';
 import WorkExperience from '@/components/WorkExperience';
-import ModernWebCapabilities from '@/components/ModernWebCapabilities';
 import Projects from '@/components/Projects';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
+import SectionTracker from '@/components/SectionTracker';
+import Reveal from '@/components/Reveal';
+import {
+  getStatus,
+  getWork,
+  getProjects,
+  getStackStats,
+  getHero,
+  getCurrently,
+  getContact,
+} from '@/lib/data';
+import { getWriting } from '@/lib/writing';
 
 export const metadata: Metadata = {
   title: 'Home',
-  description: 'Portfolio of Sohag Hossain, a Full Stack Developer specializing in React, Next.js, TypeScript, Node.js, and modern web technologies. View my projects, work experience, and get in touch.',
+  description:
+    'Sohag Hossain — Full Stack Developer with 4+ years experience building React, Next.js, Node.js, and cloud products. View experience, projects, and get in touch.',
   keywords: [
     'Sohag Hossain',
     'Full Stack Developer',
@@ -26,24 +37,19 @@ export const metadata: Metadata = {
     'Node.js Developer',
     'Portfolio',
     'Software Engineer',
-    'Frontend Developer',
-    'Backend Developer',
-    'Web Development',
-    'JavaScript Developer',
-    'Portfolio Website',
-    'Developer Portfolio'
   ],
   openGraph: {
-    title: 'Sohag Hossain - Full Stack Developer Portfolio',
-    description: 'Portfolio of Sohag Hossain, a Full Stack Developer specializing in React, Next.js, TypeScript, Node.js, and modern web technologies.',
+    title: 'Sohag Hossain — Full Stack Developer',
+    description:
+      'Full Stack Developer with 4+ years experience. React, Next.js, Node.js, PostgreSQL, and cloud infrastructure.',
     url: 'https://www.sohagdev.com',
-    siteName: 'Sohag Hossain - Portfolio',
+    siteName: 'Sohag Hossain',
     images: [
       {
         url: '/images/hero_section.png',
         width: 1200,
         height: 630,
-        alt: 'Sohag Hossain - Full Stack Developer Portfolio',
+        alt: 'Sohag Hossain - Full Stack Developer',
       },
     ],
     type: 'website',
@@ -51,8 +57,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Sohag Hossain - Full Stack Developer Portfolio',
-    description: 'Portfolio of Sohag Hossain, a Full Stack Developer specializing in React, Next.js, TypeScript, Node.js, and modern web technologies.',
+    title: 'Sohag Hossain — Full Stack Developer',
+    description:
+      'Full Stack Developer with 4+ years experience. React, Next.js, Node.js, and cloud infrastructure.',
     images: ['/images/hero_section.png'],
     creator: '@sohagmia360',
   },
@@ -72,31 +79,108 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+export default async function Home() {
+  const [status, work, projects, stack, writing, hero, currently, contact] = await Promise.all([
+    getStatus(),
+    getWork(),
+    getProjects(),
+    getStackStats(),
+    getWriting(),
+    getHero(),
+    getCurrently(),
+    getContact(),
+  ]);
+
   return (
     <>
       <Header />
-      <section aria-label="Hero section">
-        <Hero />
+      <SectionTracker
+        sections={['overview', 'experience', 'projects', 'stack', 'writing', 'connect']}
+      />
+
+      {/* 1. Identity — who / role / years / CTAs (recruiter first 3s) */}
+      <section aria-label="Hero section" data-track="overview">
+        <Hero content={hero} resumeUrl={contact.resumeUrl} />
+        <LiveStatusStrip status={status} />
       </section>
+
+      {/* 2. Quick personal facts */}
+      <Snapshot />
+
+      {/* 3. Experience — credibility next */}
+      <section
+        id="experience"
+        aria-label="Work experience"
+        data-track="experience"
+        style={{ scrollMarginTop: 80 }}
+      >
+        <Reveal>
+          <div data-reveal>
+            <WorkExperience entries={work} />
+          </div>
+        </Reveal>
+      </section>
+
+      {/* 4. Projects — proof of work */}
+      <section
+        id="projects"
+        aria-label="Projects"
+        data-track="projects"
+        style={{ scrollMarginTop: 80 }}
+      >
+        <Reveal>
+          <div data-reveal>
+            <Projects items={projects} />
+          </div>
+        </Reveal>
+      </section>
+
+      {/* 5. Stack — skills */}
+      <section
+        id="stack"
+        aria-label="Technology stack"
+        data-track="stack"
+        style={{ scrollMarginTop: 80 }}
+      >
+        <Reveal>
+          <div data-reveal>
+            <TechStack stats={stack} />
+          </div>
+        </Reveal>
+      </section>
+
+      {/* 6. Currently — professional focus (not informal filler) */}
       <section aria-label="Currently working on">
-        <Currently />
+        <Reveal>
+          <div data-reveal>
+            <Currently content={currently} />
+          </div>
+        </Reveal>
       </section>
-      <section aria-label="Writing">
-        <WritingSection />
+
+      {/* 7. Writing — secondary depth */}
+      <section aria-label="Writing" data-track="writing">
+        <Reveal>
+          <div data-reveal>
+            <WritingSection posts={writing} />
+          </div>
+        </Reveal>
       </section>
-      <section id="stack" aria-label="Technology stack" style={{ scrollMarginTop: 80 }}>
-        <TechStack />
+
+      {/* 8. Contact */}
+      <section
+        id="connect"
+        aria-label="Contact information"
+        data-track="connect"
+        style={{ scrollMarginTop: 80 }}
+      >
+        <Reveal>
+          <div data-reveal>
+            <Contact content={contact} />
+          </div>
+        </Reveal>
       </section>
-      <section id="projects" aria-label="Projects" style={{ scrollMarginTop: 80 }}>
-        <Projects />
-      </section>
-      <section id="experience" aria-label="Work experience" style={{ scrollMarginTop: 80 }}>
-        <WorkExperience />
-      </section>
-      <section id="connect" aria-label="Contact information" style={{ scrollMarginTop: 80 }}>
-        <Contact />
-      </section>
+
       <Footer />
     </>
   );

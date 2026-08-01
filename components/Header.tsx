@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
+// Order matches homepage section order (recruiter scan path).
 const primaryLinks = [
   { href: '/', label: 'Overview' },
   { href: '/#experience', label: 'Work' },
@@ -13,13 +14,9 @@ const primaryLinks = [
   { href: '/#connect', label: 'Contact' },
 ];
 
-const secondaryLinks = [
-  { href: '/lab', label: 'Lab', icon: '⬡', desc: 'Experiments & tools' },
-  { href: '/writing', label: 'Writing', icon: '✎', desc: 'Thoughts & articles' },
-  { href: '/life', label: 'Life', icon: '◐', desc: 'Outside of code' },
-];
-
-const allLinks = [...primaryLinks, ...secondaryLinks];
+// Writing is a real separate page (not a homepage section), so it gets its
+// own distinct styling and sits apart from the section anchors.
+const writingLink = { href: '/writing', label: 'Writing' };
 
 const sectionIds = ['experience', 'projects', 'stack', 'connect'];
 
@@ -215,27 +212,17 @@ export default function Header() {
 
           </nav>
 
-          {/* Right: Pills, Time, Search, CTA (desktop) */}
+          {/* Right: Writing, Time, Search, CTA (desktop) */}
           <div className="nav-time-desktop flex items-center gap-4 shrink-0">
-            {/* Writing / Life chips */}
-            <div className="flex items-center gap-2">
-              {secondaryLinks.map((link) => {
-                const active = isActive(link.href);
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={(e) => handleNavClick(e, link.href)}
-                    className={`nav-pill ${active ? 'nav-pill-active' : ''}`}
-                  >
-                    <span className="nav-pill-icon">{link.icon}</span>
-                    <span className="nav-pill-label">{link.label}</span>
-                    <span className="nav-pill-arrow">↗</span>
-                  </Link>
-                );
-              })}
-            </div>
-
+            <Link
+              href={writingLink.href}
+              onClick={(e) => handleNavClick(e, writingLink.href)}
+              className={`nav-writing-link ${isActive(writingLink.href) ? 'nav-writing-link-active' : ''}`}
+            >
+              <span className="nav-writing-icon">✎</span>
+              {writingLink.label}
+              <span className="nav-writing-arrow">↗</span>
+            </Link>
             <span className="nav-sep-dot" style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--hair-2)', display: 'inline-block' }} />
             <span
               className="font-mono text-[11px] tracking-[0.08em] uppercase whitespace-nowrap flex items-center"
@@ -378,56 +365,28 @@ export default function Header() {
             })}
           </nav>
 
-          {/* Divider */}
+          {/* Writing — separate page, styled distinctly */}
           <div
-            className="nav-mobile-divider"
-            style={{
-              height: 1,
-              background: 'var(--hair)',
-              margin: '12px 24px',
-              transitionDelay: isMenuOpen ? `${primaryLinks.length * 60}ms` : '0ms',
-            }}
-          />
-
-          {/* Secondary links — separate page cards */}
-          <div
-            className="nav-mobile-secondary-wrap px-6"
+            className="nav-mobile-writing-wrap px-6"
             style={{
               opacity: isMenuOpen ? 1 : 0,
               transform: isMenuOpen ? 'translateY(0)' : 'translateY(8px)',
-              transition: `opacity 0.4s, transform 0.4s`,
+              transition: 'opacity 0.4s, transform 0.4s',
               transitionDelay: isMenuOpen ? `${primaryLinks.length * 60 + 20}ms` : '0ms',
             }}
           >
-            <span
-              className="font-mono text-[10px] tracking-[0.12em] uppercase block mb-3"
-              style={{ color: 'var(--muted)', opacity: 0.35 }}
+            <Link
+              href={writingLink.href}
+              onClick={(e) => { handleNavClick(e, writingLink.href); setIsMenuOpen(false); }}
+              className={`nav-writing-mobile ${isActive(writingLink.href) ? 'nav-writing-mobile-active' : ''}`}
             >
-              More from me
-            </span>
-            <div className="flex gap-3">
-              {secondaryLinks.map((link, i) => {
-                const active = isActive(link.href);
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={(e) => { handleNavClick(e, link.href); setIsMenuOpen(false); }}
-                    className={`nav-pill-mobile ${active ? 'nav-pill-mobile-active' : ''}`}
-                    style={{
-                      transitionDelay: isMenuOpen ? `${(primaryLinks.length + i + 1) * 60 + 40}ms` : '0ms',
-                    }}
-                  >
-                    <span className="nav-pill-icon-mobile">{link.icon}</span>
-                    <div className="flex flex-col">
-                      <span className="text-[14px]" style={{ color: active ? 'var(--fg)' : 'var(--fg)', fontWeight: 500 }}>{link.label}</span>
-                      <span className="text-[11px]" style={{ color: 'var(--muted)', opacity: 0.6 }}>{link.desc}</span>
-                    </div>
-                    <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--muted)', opacity: 0.4 }}>↗</span>
-                  </Link>
-                );
-              })}
-            </div>
+              <span className="nav-writing-icon-mobile">✎</span>
+              <div className="flex flex-col">
+                <span className="text-[14px] font-medium" style={{ color: 'var(--fg)' }}>Writing</span>
+                <span className="text-[11px]" style={{ color: 'var(--muted)', opacity: 0.6 }}>Notes &amp; articles — separate page</span>
+              </div>
+              <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--muted)', opacity: 0.4 }}>↗</span>
+            </Link>
           </div>
 
           {/* Divider */}
@@ -437,7 +396,7 @@ export default function Header() {
               height: 1,
               background: 'var(--hair)',
               margin: '12px 24px',
-              transitionDelay: isMenuOpen ? `${allLinks.length * 60}ms` : '0ms',
+              transitionDelay: isMenuOpen ? `${primaryLinks.length * 60 + 60}ms` : '0ms',
             }}
           />
 
@@ -446,7 +405,7 @@ export default function Header() {
             className="nav-mobile-extras"
             style={{
               transitionDelay: isMenuOpen
-                ? `${allLinks.length * 60 + 40}ms`
+                ? `${primaryLinks.length * 60 + 100}ms`
                 : '0ms',
             }}
           >
@@ -485,7 +444,7 @@ export default function Header() {
             className="nav-mobile-cta-wrap"
             style={{
               transitionDelay: isMenuOpen
-                ? `${allLinks.length * 60 + 100}ms`
+                ? `${primaryLinks.length * 60 + 160}ms`
                 : '0ms',
             }}
           >

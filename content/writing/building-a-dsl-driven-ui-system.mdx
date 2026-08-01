@@ -1,0 +1,52 @@
+---
+title: "Building a DSL-driven UI system"
+excerpt: "Why I moved from hardcoded JSX to a tiny declarative language for rendering UI — and what it unlocked."
+tags: ["Architecture", "React", "DSL"]
+coverImage: "/images/hero_section.png"
+publishedAt: "2026-05-01"
+trending: true
+---
+
+Most portfolios hardcode their content into JSX. That means every copy tweak is a deploy — a new title, a reordered feature list, a swapped screenshot, all routed through a pull request.
+
+I wanted the opposite: a small **domain-specific language** where a card, a stack, or a callout is just structured data — parsed and rendered live by a single renderer.
+
+## The core idea
+
+A DSL is just a contract. You define a handful of primitives — `card`, `stack`, `badge` — and a renderer that maps each one to a React component. Authors write intent; the system handles layout, spacing, and interaction states.
+
+<Callout type="tip">
+The trick isn't the parser — it's keeping the primitive list *small*. Every new primitive is a permanent API you have to support.
+</Callout>
+
+A minimal version looks like this:
+
+```ts
+type Node =
+  | { type: 'card'; title: string; body: string }
+  | { type: 'stack'; children: Node[] }
+  | { type: 'badge'; label: string; tone: 'info' | 'success' | 'warning' };
+
+function render(node: Node): React.ReactNode {
+  switch (node.type) {
+    case 'card':
+      return <Card title={node.title}>{node.body}</Card>;
+    case 'stack':
+      return <Stack>{node.children.map(render)}</Stack>;
+    case 'badge':
+      return <Badge tone={node.tone}>{node.label}</Badge>;
+  }
+}
+```
+
+## Why it matters
+
+- **Content is data, not code** — a new section is a config change, not a deploy.
+- **Consistency is free** — every card obeys the same spacing scale and easing curve, because they're all rendered by the same function.
+- **It composes** — the same renderer can power a blog, a project page, or a settings screen, since none of them care *how* the data got there.
+
+## The tradeoff
+
+A DSL is an abstraction, and abstractions have a cost: anyone extending the system has to learn the primitive vocabulary before they can add anything new. For a solo project that's a fair trade. For a team, I'd invest much earlier in documentation and type-safety around the schema.
+
+That's the same reasoning that eventually led me to simplify this very site — see [Writing without a CMS](/writing/writing-without-a-cms) for how that played out for the blog you're reading right now.
